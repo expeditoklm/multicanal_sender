@@ -1,0 +1,284 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+
+model User {
+    id         Int      @id @default(autoincrement())
+    name       String?
+    username   String?   
+    email      String    @unique 
+    role       String
+    password   String
+    deleted    Boolean  @default(false)
+    created_at DateTime @default(now())
+    updated_at DateTime @updatedAt
+
+    // Relation with UserCompany
+    userCompanies UserCompany[]
+
+    // Relation with Campaigns
+    campaigns Campaign[]
+
+    @@map("users")
+}
+
+model Company {
+    id              Int      @id @default(autoincrement())
+    name            String
+    description     String?
+    link_fb         String?
+    link_tiktok     String?
+    secondary_color String?
+    primary_color   String?
+    tertiary_color  String?
+    phone           String?
+    whatsapp        String?
+    location        String?
+    deleted         Boolean  @default(false)
+    created_at      DateTime @default(now())
+    updated_at      DateTime @updatedAt
+
+    // Relation with UserCompany
+    userCompanies UserCompany[]
+
+    // Relation with Campaigns
+    campaigns Campaign[]
+
+    @@map("companies")
+}
+
+model UserCompany {
+    id         Int      @id @default(autoincrement())
+    user_id    Int
+    company_id Int
+    deleted    Boolean  @default(false)
+    created_at DateTime @default(now())
+    updated_at DateTime @updatedAt
+
+    // Relations
+    user    User    @relation(fields: [user_id], references: [id])
+    company Company @relation(fields: [company_id], references: [id])
+    
+
+    @@map("user_company")
+    @@unique([user_id, company_id])
+}
+
+enum CampaignStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+}
+
+model Campaign {
+    id         Int      @id @default(autoincrement())
+    name       String
+    start_date DateTime?
+    end_date   DateTime?
+    status     CampaignStatus
+    user_id    Int
+    company_id Int
+    deleted    Boolean  @default(false)
+    created_at DateTime @default(now())
+    updated_at DateTime @updatedAt
+
+    // Relations
+    user    User    @relation(fields: [user_id], references: [id])
+    company Company @relation(fields: [company_id], references: [id])
+
+    // Relation with Messages
+    messages         Message[]
+    templateCampaign TemplateCampaign[]
+
+    @@map("campaigns")
+}
+
+model Channel {
+    id         Int      @id @default(autoincrement())
+    label      String
+    deleted    Boolean  @default(false)
+    created_at DateTime @default(now())
+    updated_at DateTime @updatedAt
+
+    // Relation with Templates
+    templates Template[]
+
+    // Relation with Messages
+    messages Message[]
+
+    @@map("channels")
+}
+
+model Audience {
+    id          Int      @id @default(autoincrement())
+    name        String
+    description String?
+    deleted     Boolean  @default(false)
+    created_at  DateTime @default(now())
+    updated_at  DateTime @updatedAt
+
+    // Relation with AudienceContact
+    audienceContacts AudienceContact[]
+
+    // Relation with Messages
+    messages Message[]
+
+    @@map("audiences")
+}
+
+model Contact {
+    id         Int      @id @default(autoincrement())
+    name       String?
+    username   String?
+    email      String
+    phone      String
+    source     String?
+    deleted    Boolean  @default(false)
+    created_at DateTime @default(now())
+    updated_at DateTime @updatedAt
+
+    // Relation with AudienceContact
+    audienceContacts AudienceContact[]
+
+    // Relation with MessageContact
+    messageContacts MessageContact[]
+
+    @@map("contacts")
+}
+
+model AudienceContact {
+    audience_id Int
+    contact_id  Int
+
+    // Relations
+    audience Audience @relation(fields: [audience_id], references: [id])
+    contact  Contact  @relation(fields: [contact_id], references: [id])
+
+    @@id([audience_id, contact_id])
+    @@map("audiences_contacts")
+}
+
+model Message {
+    id          Int      @id @default(autoincrement())
+    object      String
+    content     String
+    status      String?
+    channel_id  Int
+    campaign_id Int
+    audience_id Int
+    deleted     Boolean  @default(false)
+    created_at  DateTime @default(now())
+    updated_at  DateTime @updatedAt
+
+    // Relations
+    channel  Channel  @relation(fields: [channel_id], references: [id])
+    campaign Campaign @relation(fields: [campaign_id], references: [id])
+    audience Audience @relation(fields: [audience_id], references: [id])
+
+    // Relation with MessageContact
+    messageContacts  MessageContact[]
+    templateCampaign TemplateCampaign[]
+
+    @@map("messages")
+}
+
+model InteractType {
+    id         Int      @id @default(autoincrement())
+    label      String
+    deleted    Boolean  @default(false)
+    created_at DateTime @default(now())
+    updated_at DateTime @updatedAt
+
+    // Relation with MessageContact
+    messageContacts MessageContact[]
+
+    @@map("interact_types")
+}
+
+model MessageContact {
+    id               Int      @id @default(autoincrement())
+    interact_date    DateTime
+    message_id       Int
+    contact_id       Int
+    interact_type_id Int
+    deleted          Boolean  @default(false)
+    created_at       DateTime @default(now())
+    updated_at       DateTime @updatedAt
+
+    // Relations
+    message       Message      @relation(fields: [message_id], references: [id])
+    contact       Contact      @relation(fields: [contact_id], references: [id])
+    interact_type InteractType @relation(fields: [interact_type_id], references: [id])
+
+    @@map("message_contacts")
+}
+
+model Template {
+    id               Int      @id @default(autoincrement())
+    name             String?
+    content          String
+    template_type_id Int
+    channel_id       Int
+    deleted          Boolean  @default(false)
+    created_at       DateTime @default(now())
+    updated_at       DateTime @updatedAt
+
+    // Relations
+    templateType TemplateType @relation(fields: [template_type_id], references: [id])
+    channel      Channel      @relation(fields: [channel_id], references: [id])
+
+    templateCampaign TemplateCampaign[]
+
+    @@map("templates")
+}
+
+model TemplateType {
+    id         Int      @id @default(autoincrement())
+    label      String
+    deleted    Boolean  @default(false)
+    created_at DateTime @default(now())
+    updated_at DateTime @updatedAt
+
+    // Relation with Template
+    templates Template[]
+
+    @@map("template_types")
+}
+
+model TemplateCampaign {
+    id          Int    @id @default(autoincrement())
+    message_id  Int
+    template_id Int
+    campaign_id Int
+    title       String?
+    description String?
+    link        String?
+    btn_txt     String?
+    btn_link    String?
+    image       String?
+
+    deleted    Boolean  @default(false)
+    created_at DateTime @default(now())
+    updated_at DateTime @updatedAt
+
+    // Relations
+    message  Message  @relation(fields: [message_id], references: [id])
+    template Template @relation(fields: [template_id], references: [id])
+    campaign Campaign @relation(fields: [campaign_id], references: [id])
+
+    @@map("template_campaigns")
+}
+
+ 
