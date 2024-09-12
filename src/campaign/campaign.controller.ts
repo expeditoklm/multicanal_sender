@@ -6,6 +6,7 @@ import { ExtendCampaignDto } from './dto/extendCampaignDto';
 
 @Controller('campaigns')
 export class CampaignController {
+    
     constructor(private readonly campaignService: CampaignService) {}
 
     @Post()
@@ -46,6 +47,11 @@ export class CampaignController {
     @Patch('/cancel/:id')
     cancelCampaign(@Param('id') id: number) {
         return this.campaignService.cancelCampaign(+id);
+    }
+
+    @Patch('/complete/:id')
+    completeCampaign(@Param('id') id: number) {
+        return this.campaignService.completeCampaign(+id);
     }
 
     @Get('/company/:companyId')

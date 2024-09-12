@@ -80,7 +80,10 @@ export class CampaignService {
     // Prolonger la durée d'une campagne
     extendCampaign(campaignId: number, newEndDate: Date) {
         return this.prisma.campaign.update({
-            where: { id: campaignId },
+            where: { id: campaignId ,
+                deleted: false,
+            },
+            
             data: {
                 end_date: newEndDate,
             },
@@ -90,9 +93,23 @@ export class CampaignService {
     // Annuler une campagne
     cancelCampaign(campaignId: number) {
         return this.prisma.campaign.update({
-            where: { id: campaignId },
+            where: { id: campaignId ,
+                deleted: false,
+            },
             data: {
                 status: CampaignStatus.CANCELLED,
+                deleted: true,
+            },
+        });
+    }
+
+    completeCampaign(campaignId: number) {
+        return this.prisma.campaign.update({
+            where: { id: campaignId ,
+                deleted: false,
+            },
+            data: {
+                status: CampaignStatus.COMPLETED,
             },
         });
     }

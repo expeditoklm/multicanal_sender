@@ -142,7 +142,7 @@ model Contact {
     id         Int      @id @default(autoincrement())
     name       String?
     username   String?
-    email      String
+    email      String   @unique
     phone      String
     source     String?
     deleted    Boolean  @default(false)
@@ -170,11 +170,19 @@ model AudienceContact {
     @@map("audiences_contacts")
 }
 
+
+
+enum MessageStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
 model Message {
     id          Int      @id @default(autoincrement())
     object      String
     content     String
-    status      String?
+    status      MessageStatus
     channel_id  Int
     campaign_id Int
     audience_id Int
