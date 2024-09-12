@@ -34,14 +34,9 @@ export class CreateCompanyDto {
   @IsString()
   readonly phone: string;
 
-
   @IsOptional()
   @IsString()
   readonly whatsapp: string;
-
-  
-  
-  
 
   @IsOptional()
   @IsString()

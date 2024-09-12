@@ -1,8 +1,19 @@
-// src/messageContact/dto/create-messageContact.dto.ts
+import { IsDate, IsInt, IsNotEmpty } from 'class-validator';
+
 export class CreateMessageContactDto {
-    interact_date: Date;
-    message_id: number;
-    contact_id: number;
-    interact_type_id: number;
-  }
-  
+  @IsNotEmpty()
+  @IsDate()
+  interact_date: Date;
+
+  @IsNotEmpty()
+  @IsInt()
+  message_id: number;
+
+  @IsNotEmpty()
+  @IsInt()
+  contact_id: number;
+
+  @IsNotEmpty()
+  @IsInt()
+  interact_type_id: number;
+}
