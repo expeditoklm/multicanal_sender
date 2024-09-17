@@ -1,10 +1,10 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { FindUsersByCompanyDto } from './dto/findUsersByCompanyDto';
-import { RemoveUserFromCompanyDto } from './dto/removeUserFromCompanyDto';
-import { GetCompanyByUserDto } from './dto/getCompanyByUserDto';
-import { UpdateUserCompanyDto } from './dto/updateUserCompanyDto';
-import { AssociateUserToCompaniesDto } from './dto/associateUserToCompaniesDto';
+import { FindUsersByCompanyDto } from './dto/findUsersByCompany.dto';
+import { RemoveUserFromCompanyDto } from './dto/removeUserFromCompany.dto';
+import { GetCompanyByUserDto } from './dto/getCompanyByUser.dto';
+import { UpdateUserCompanyDto } from './dto/updateUserCompany.dto';
+import { AssociateUserToCompaniesDto } from './dto/associateUserToCompanies.dto';
 
 @Injectable()
 export class UserCompanyService {

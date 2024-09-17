@@ -1,11 +1,11 @@
 import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateTemplateTypeDto } from './dto/createTemplateTypeDto';
-import { UpdateTemplateTypeDto } from './dto/updateTemplateTypeDto';
+import { CreateTemplateTypeDto } from './dto/createTemplateType.dto';
+import { UpdateTemplateTypeDto } from './dto/updateTemplateType.dto';
 
 @Injectable()
 export class TemplateTypeService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   // Créer un nouveau TemplateType
   async create(createTemplateTypeDto: CreateTemplateTypeDto) {

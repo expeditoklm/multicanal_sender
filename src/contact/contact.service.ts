@@ -1,12 +1,12 @@
 import { Injectable, BadRequestException, NotFoundException, ConflictException, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { UpdateContactDto } from './dto/updateContactDto';
-import { CreateContactDto } from './dto/createContactDto';
-import { FindContactByEmailDto } from './dto/findContactByEmailDto';
+import { UpdateContactDto } from './dto/updateContact.dto';
+import { CreateContactDto } from './dto/createContact.dto';
+import { FindContactByEmailDto } from './dto/findContactByEmail.dto';
 
 @Injectable()
 export class ContactService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   // Créer un contact
   async create(createContactDto: CreateContactDto) {
@@ -172,9 +172,9 @@ export class ContactService {
 
   // Méthode pour obtenir les messages d'un contact d'une audience, et optionnellement par campagne et/ou canal
   async getMessagesByContactAudienceCampaignChannel(
-    contactId: number, 
-    audienceId: number, 
-    campaignId?: number, 
+    contactId: number,
+    audienceId: number,
+    campaignId?: number,
     channelId?: number
   ) {
     try {

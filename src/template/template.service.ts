@@ -1,69 +1,69 @@
 import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateTemplateDto } from './dto/createTemplateDto';
-import { UpdateTemplateDto } from './dto/updateTemplateDto';
+import { CreateTemplateDto } from './dto/createTemplate.dto';
+import { UpdateTemplateDto } from './dto/updateTemplate.dto';
 
 @Injectable()
 export class TemplateService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   // Créer un nouveau Template
-// Créer un nouveau Template
-async create(createTemplateDto: CreateTemplateDto) {
-  // Vérifier que les champs requis sont fournis
-  if (!createTemplateDto.content) {
-    throw new BadRequestException('Le champ "contenu" est requis pour créer un modèle.');
-  }
-  if (!createTemplateDto.template_type_id) {
-    throw new BadRequestException('L\'ID du type de modèle est requis pour créer un modèle.');
-  }
-  if (!createTemplateDto.channel_id) {
-    throw new BadRequestException('L\'ID du canal est requis pour créer un modèle.');
-  }
+  // Créer un nouveau Template
+  async create(createTemplateDto: CreateTemplateDto) {
+    // Vérifier que les champs requis sont fournis
+    if (!createTemplateDto.content) {
+      throw new BadRequestException('Le champ "contenu" est requis pour créer un modèle.');
+    }
+    if (!createTemplateDto.template_type_id) {
+      throw new BadRequestException('L\'ID du type de modèle est requis pour créer un modèle.');
+    }
+    if (!createTemplateDto.channel_id) {
+      throw new BadRequestException('L\'ID du canal est requis pour créer un modèle.');
+    }
 
-  // Vérifier la validité des IDs
-  if (isNaN(createTemplateDto.template_type_id) || createTemplateDto.template_type_id <= 0) {
-    throw new BadRequestException('L\'ID du type de modèle doit être un nombre valide supérieur à zéro.');
+    // Vérifier la validité des IDs
+    if (isNaN(createTemplateDto.template_type_id) || createTemplateDto.template_type_id <= 0) {
+      throw new BadRequestException('L\'ID du type de modèle doit être un nombre valide supérieur à zéro.');
+    }
+    if (isNaN(createTemplateDto.channel_id) || createTemplateDto.channel_id <= 0) {
+      throw new BadRequestException('L\'ID du canal doit être un nombre valide supérieur à zéro.');
+    }
+
+    // Vérifier si le type de modèle existe
+    const templateTypeExists = await this.prisma.templateType.findUnique({
+      where: { id: createTemplateDto.template_type_id },
+    });
+
+    if (!templateTypeExists) {
+      throw new NotFoundException(`Le type de modèle avec l'ID ${createTemplateDto.template_type_id} n'existe pas.`);
+    }
+
+    // Vérifier si le canal existe
+    const channelExists = await this.prisma.channel.findUnique({
+      where: { id: createTemplateDto.channel_id },
+    });
+
+    if (!channelExists) {
+      throw new NotFoundException(`Le canal avec l'ID ${createTemplateDto.channel_id} n'existe pas.`);
+    }
+
+    // Vérifier si un modèle avec les mêmes détails existe déjà
+    const existingTemplate = await this.prisma.template.findFirst({
+      where: {
+        content: createTemplateDto.content,
+        template_type_id: createTemplateDto.template_type_id,
+        channel_id: createTemplateDto.channel_id,
+      },
+    });
+
+    if (existingTemplate) {
+      throw new ConflictException('Un modèle avec les mêmes détails existe déjà.');
+    }
+
+    return this.prisma.template.create({
+      data: createTemplateDto,
+    });
   }
-  if (isNaN(createTemplateDto.channel_id) || createTemplateDto.channel_id <= 0) {
-    throw new BadRequestException('L\'ID du canal doit être un nombre valide supérieur à zéro.');
-  }
-
-  // Vérifier si le type de modèle existe
-  const templateTypeExists = await this.prisma.templateType.findUnique({
-    where: { id: createTemplateDto.template_type_id },
-  });
-
-  if (!templateTypeExists) {
-    throw new NotFoundException(`Le type de modèle avec l'ID ${createTemplateDto.template_type_id} n'existe pas.`);
-  }
-
-  // Vérifier si le canal existe
-  const channelExists = await this.prisma.channel.findUnique({
-    where: { id: createTemplateDto.channel_id },
-  });
-
-  if (!channelExists) {
-    throw new NotFoundException(`Le canal avec l'ID ${createTemplateDto.channel_id} n'existe pas.`);
-  }
-
-  // Vérifier si un modèle avec les mêmes détails existe déjà
-  const existingTemplate = await this.prisma.template.findFirst({
-    where: {
-      content: createTemplateDto.content,
-      template_type_id: createTemplateDto.template_type_id,
-      channel_id: createTemplateDto.channel_id,
-    },
-  });
-
-  if (existingTemplate) {
-    throw new ConflictException('Un modèle avec les mêmes détails existe déjà.');
-  }
-
-  return this.prisma.template.create({
-    data: createTemplateDto,
-  });
-}
   // Récupérer tous les Templates
   async findAll() {
     try {

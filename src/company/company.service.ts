@@ -1,11 +1,11 @@
 import { Injectable, NotFoundException, BadRequestException, ConflictException, InternalServerErrorException, UnauthorizedException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateCompanyDto } from './dto/createCompanyDto ';
-import { UpdateCompanyDto } from './dto/updateCompanyDto';
+import { CreateCompanyDto } from './dto/createCompany.dto ';
+import { UpdateCompanyDto } from './dto/updateCompany.dto';
 
 @Injectable()
 export class CompanyService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(private readonly prismaService: PrismaService) { }
 
   async create(createCompanyDto: CreateCompanyDto) {
     try {
@@ -48,7 +48,7 @@ export class CompanyService {
 
       }
       return { message: 'Compagnie récupérées avec succès', companies };
-        
+
     } catch (error) {
       if (error instanceof UnauthorizedException) {
         throw new UnauthorizedException('Vous n\'êtes pas autorisé à voir la liste des entreprises.');

@@ -1,13 +1,13 @@
 // channel.service.ts
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateChannelDto } from './dto/createChannelDto';
-import { UpdateChannelDto } from './dto/updateChannelDto';
-import { AddTemplateToChannelDto } from './dto/addTemplateToChannelDto';
+import { CreateChannelDto } from './dto/createChannel.dto';
+import { UpdateChannelDto } from './dto/updateChannel.dto';
+import { AddTemplateToChannelDto } from './dto/addTemplateToChannel.dto';
 
 @Injectable()
 export class ChannelService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   // Créer un canal
   async create(createChannelDto: CreateChannelDto) {
@@ -40,7 +40,7 @@ export class ChannelService {
     try {
       const channels = await this.prisma.channel.findMany({
         where: { deleted: false },
-       
+
       });
       if (channels.length === 0) {
         throw new HttpException('Aucun canal trouvé.', HttpStatus.NOT_FOUND);

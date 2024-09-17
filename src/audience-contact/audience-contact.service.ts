@@ -1,10 +1,10 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateAudienceContactDto } from './dto/createAudienceContactDto';
+import { CreateAudienceContactDto } from './dto/createAudienceContact.dto';
 
 @Injectable()
 export class AudienceContactService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   // Créer une nouvelle relation audience-contact
   async create(createAudienceContactDto: CreateAudienceContactDto) {

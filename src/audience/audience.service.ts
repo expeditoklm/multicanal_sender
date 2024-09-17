@@ -1,12 +1,12 @@
 // audience.service.ts
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateAudienceDto } from './dto/createAudienceDto';
-import { UpdateAudienceDto } from './dto/updateAudienceDto';
+import { CreateAudienceDto } from './dto/createAudience.dto';
+import { UpdateAudienceDto } from './dto/updateAudience.dto';
 
 @Injectable()
 export class AudienceService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   // Créer une audience
   async create(createAudienceDto: CreateAudienceDto) {

@@ -1,11 +1,11 @@
 import { Injectable, NotFoundException, BadRequestException, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateTemplateCampaignDto } from './dto/createTemplateCampaignDto';
-import { UpdateTemplateCampaignDto } from './dto/updateTemplateCampaignDto';
+import { CreateTemplateCampaignDto } from './dto/createTemplateCampaign.dto';
+import { UpdateTemplateCampaignDto } from './dto/updateTemplateCampaign.dto';
 
 @Injectable()
 export class TemplateCampaignService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   // Vérifie la validité de l'ID d'une entité
   private async validateId(entityName: string, id: number, type: 'template' | 'message' | 'campaign') {

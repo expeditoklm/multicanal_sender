@@ -1,11 +1,11 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateInteractTypeDto } from './dto/createInteractTypeDto';
-import { UpdateInteractTypeDto } from './dto/updateInteractTypeDto';
+import { CreateInteractTypeDto } from './dto/createInteractType.dto';
+import { UpdateInteractTypeDto } from './dto/updateInteractType.dto';
 
 @Injectable()
 export class InteractTypeService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async create(createInteractTypeDto: CreateInteractTypeDto) {
     return this.prisma.interactType.create({

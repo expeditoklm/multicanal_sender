@@ -1,12 +1,12 @@
 import { BadRequestException, Injectable, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateMessageDto } from './dto/createMessageDto';
-import { UpdateMessageDto } from './dto/updateMessageDto';
+import { CreateMessageDto } from './dto/createMessage.dto';
+import { UpdateMessageDto } from './dto/updateMessage.dto';
 import { MessageStatus } from '@prisma/client';
 
 @Injectable()
 export class MessageService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async create(createMessageDto: CreateMessageDto) {
     const { object, content, status, channel_id, campaign_id, audience_id } = createMessageDto;
@@ -16,7 +16,7 @@ export class MessageService {
       throw new BadRequestException('L\'ID du canal doit être un nombre valide supérieur à zéro.');
     }
 
-    const channelExists = await this.prisma.channel.findUnique({ where: { id: channel_id , deleted : false } });
+    const channelExists = await this.prisma.channel.findUnique({ where: { id: channel_id, deleted: false } });
     if (!channelExists) {
       throw new NotFoundException(`Aucun canal trouvé avec l'ID ${channel_id}.`);
     }
@@ -26,7 +26,7 @@ export class MessageService {
       throw new BadRequestException('L\'ID de la campagne doit être un nombre valide supérieur à zéro.');
     }
 
-    const campaignExists = await this.prisma.campaign.findUnique({ where: { id: campaign_id , deleted : false} });
+    const campaignExists = await this.prisma.campaign.findUnique({ where: { id: campaign_id, deleted: false } });
     if (!campaignExists) {
       throw new NotFoundException(`Aucune campagne trouvée avec l'ID ${campaign_id}.`);
     }
@@ -36,7 +36,7 @@ export class MessageService {
       throw new BadRequestException('L\'ID de l\'audience doit être un nombre valide supérieur à zéro.');
     }
 
-    const audienceExists = await this.prisma.audience.findUnique({ where: { id: audience_id , deleted : false } });
+    const audienceExists = await this.prisma.audience.findUnique({ where: { id: audience_id, deleted: false } });
     if (!audienceExists) {
       throw new NotFoundException(`Aucune audience trouvée avec l'ID ${audience_id}.`);
     }

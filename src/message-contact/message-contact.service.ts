@@ -1,24 +1,24 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateMessageContactDto } from './dto/createMessageContactDto';
-import { UpdateMessageContactDto } from './dto/updateMessageContactDto';
+import { CreateMessageContactDto } from './dto/createMessageContact.dto';
+import { UpdateMessageContactDto } from './dto/updateMessageContact.dto';
 
 @Injectable()
 export class MessageContactService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   // Créer un nouveau MessageContact
   async create(createMessageContactDto: CreateMessageContactDto) {
     // Vérifier que tous les champs requis sont fournis
-    if (!createMessageContactDto.interact_date || !createMessageContactDto.message_id || 
-        !createMessageContactDto.contact_id || !createMessageContactDto.interact_type_id) {
+    if (!createMessageContactDto.interact_date || !createMessageContactDto.message_id ||
+      !createMessageContactDto.contact_id || !createMessageContactDto.interact_type_id) {
       throw new BadRequestException('Tous les champs (date d\'interaction, ID du message, ID du contact et ID du type d\'interaction) sont requis.');
     }
 
     // Vérifier que les IDs sont des nombres valides
     if (isNaN(createMessageContactDto.message_id) || createMessageContactDto.message_id <= 0 ||
-        isNaN(createMessageContactDto.contact_id) || createMessageContactDto.contact_id <= 0 ||
-        isNaN(createMessageContactDto.interact_type_id) || createMessageContactDto.interact_type_id <= 0) {
+      isNaN(createMessageContactDto.contact_id) || createMessageContactDto.contact_id <= 0 ||
+      isNaN(createMessageContactDto.interact_type_id) || createMessageContactDto.interact_type_id <= 0) {
       throw new BadRequestException('Les IDs fournis doivent être des nombres valides supérieurs à zéro.');
     }
 

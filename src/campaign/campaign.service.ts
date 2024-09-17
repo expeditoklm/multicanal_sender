@@ -1,14 +1,14 @@
 // campaign.service.ts
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateCampaignDto } from './dto/createCampaignDto';
+import { CreateCampaignDto } from './dto/createCampaign.dto';
 import { UpdateCampaignDto } from './dto/updateCampaignDto';
-import { ExtendCampaignDto } from './dto/extendCampaignDto';
+import { ExtendCampaignDto } from './dto/extendCampaign.dto';
 import { CampaignStatus } from '@prisma/client';
 
 @Injectable()
 export class CampaignService {
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(private readonly prisma: PrismaService) { }
 
     // Créer une campagne
     async create(createCampaignDto: CreateCampaignDto) {

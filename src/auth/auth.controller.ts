@@ -1,34 +1,44 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { SignUpDto } from './dto/signupDto';
-import { SignInDto } from './dto/singninDto';
-import { ResetPasswordDemandDto } from './dto/resetPasswordDemandDto';
-import { ResetPasswordConfirmationDto } from './dto/resetPasswordConfirmationDto';
+import { SignUpDto } from './dto/signup.dto';
+import { SignInDto } from './dto/singnin.dto';
+import { ResetPasswordDemandDto } from './dto/resetPasswordDemand.dto';
+import { ResetPasswordConfirmationDto } from './dto/resetPasswordConfirmation.dto';
+import { ApiTags, ApiOperation, ApiBody } from '@nestjs/swagger';
 
+@ApiTags('Authentification') // Groupe de routes sous le tag 'Authentification'
 @Controller('auth')
 export class AuthController {
 
-    constructor(private readonly authService : AuthService) {}
+    constructor(private readonly authService: AuthService) { }
+
     @Post('signup')
-    signUp(@Body() signUpDto : SignUpDto) {
+    @ApiOperation({ summary: 'Inscription d’un utilisateur' }) // Décrit l’opération d'inscription
+    @ApiBody({ description: 'Données pour l’inscription', type: SignUpDto }) // Décrit le corps de la requête pour l'inscription
+    signUp(@Body() signUpDto: SignUpDto) {
         console.log(signUpDto);
-        return this.authService.signUp(signUpDto)
+        return this.authService.signUp(signUpDto);
     }
 
     @Post('signin')
-    signIn(@Body() signInDto : SignInDto) {
-        return this.authService.signIn(signInDto)
+    @ApiOperation({ summary: 'Connexion d’un utilisateur' }) // Décrit l’opération de connexion
+    @ApiBody({ description: 'Données pour la connexion', type: SignInDto }) // Décrit le corps de la requête pour la connexion
+    signIn(@Body() signInDto: SignInDto) {
+        return this.authService.signIn(signInDto);
     }
 
     @Post('reset-password')
-    resetPasswordDemand(@Body() resetPasswordDemandDto : ResetPasswordDemandDto) {
-        return this.authService.resetPasswordDemand(resetPasswordDemandDto)
+    @ApiOperation({ summary: 'Demande de réinitialisation de mot de passe' }) // Décrit l’opération de demande de réinitialisation
+    @ApiBody({ description: 'Données pour demander la réinitialisation de mot de passe', type: ResetPasswordDemandDto }) // Décrit le corps de la requête pour la demande de réinitialisation
+    resetPasswordDemand(@Body() resetPasswordDemandDto: ResetPasswordDemandDto) {
+        return this.authService.resetPasswordDemand(resetPasswordDemandDto);
     }
 
-
     @Post('reset-password-confirmation')
-    resetPasswordConfirmation(@Body() resetPasswordConfirmationDto : ResetPasswordConfirmationDto) {
-        return this.authService.resetPasswordConfirmation(resetPasswordConfirmationDto)
+    @ApiOperation({ summary: 'Confirmation de la réinitialisation du mot de passe' }) // Décrit l’opération de confirmation de réinitialisation
+    @ApiBody({ description: 'Données pour confirmer la réinitialisation du mot de passe', type: ResetPasswordConfirmationDto }) // Décrit le corps de la requête pour la confirmation de réinitialisation
+    resetPasswordConfirmation(@Body() resetPasswordConfirmationDto: ResetPasswordConfirmationDto) {
+        return this.authService.resetPasswordConfirmation(resetPasswordConfirmationDto);
     }
 
 }
