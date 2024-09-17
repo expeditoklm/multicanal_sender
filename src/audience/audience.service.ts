@@ -1,150 +1,194 @@
 // audience.service.ts
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-
 import { CreateAudienceDto } from './dto/createAudienceDto';
 import { UpdateAudienceDto } from './dto/updateAudienceDto';
+
 @Injectable()
 export class AudienceService {
   constructor(private readonly prisma: PrismaService) {}
 
   // Créer une audience
-  create(createAudienceDto: CreateAudienceDto) {
-    return this.prisma.audience.create({
-      data: {
-        ...createAudienceDto,
-        deleted: false,
-      },
-    });
+  async create(createAudienceDto: CreateAudienceDto) {
+    try {
+      const audience = await this.prisma.audience.create({
+        data: {
+          ...createAudienceDto,
+          deleted: false,
+        },
+      });
+      return { message: 'Audience créée avec succès', audience };
+    } catch (error) {
+      if (error.code === 'P2002') {
+        throw new HttpException('Une audience avec ce nom existe déjà.', HttpStatus.BAD_REQUEST);
+      }
+      throw new HttpException(
+        'Erreur lors de la création de l’audience. Veuillez vérifier les informations.',
+        HttpStatus.BAD_REQUEST
+      );
+    }
   }
 
   // Trouver toutes les audiences
-  findAll() {
-    return this.prisma.audience.findMany({
-      where: { deleted: false },
-    });
+  async findAll() {
+    try {
+      const audiences = await this.prisma.audience.findMany({
+        where: { deleted: false },
+      });
+      return { message: 'Audiences récupérées avec succès', audiences };
+    } catch (error) {
+      throw new HttpException(
+        'Erreur lors de la récupération des audiences. Veuillez réessayer plus tard.',
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
   }
 
   // Trouver une audience spécifique
-  findOne(id: number) {
-    return this.prisma.audience.findUnique({
-      where: { id },
-    });
+  async findOne(id: number) {
+    try {
+      const audience = await this.prisma.audience.findUnique({ where: { id } });
+      if (!audience) {
+        throw new HttpException('Audience introuvable. Vérifiez l’identifiant.', HttpStatus.NOT_FOUND);
+      }
+      return { message: 'Audience trouvée avec succès', audience };
+    } catch (error) {
+      throw new HttpException(
+        'Erreur lors de la recherche de l’audience. Veuillez vérifier l’identifiant fourni.',
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
   }
 
   // Mettre à jour une audience
-  update(id: number, updateAudienceDto: UpdateAudienceDto) {
-    return this.prisma.audience.update({
-      where: { id },
-      data: updateAudienceDto,
-    });
+  async update(id: number, updateAudienceDto: UpdateAudienceDto) {
+    try {
+      const audience = await this.prisma.audience.update({
+        where: { id },
+        data: updateAudienceDto,
+      });
+      return { message: 'Audience mise à jour avec succès', audience };
+    } catch (error) {
+      if (error.code === 'P2025') {
+        throw new HttpException('Audience introuvable. Impossible de mettre à jour.', HttpStatus.NOT_FOUND);
+      }
+      throw new HttpException(
+        'Erreur lors de la mise à jour de l’audience. Vérifiez les données fournies.',
+        HttpStatus.BAD_REQUEST
+      );
+    }
   }
 
-  remove(id: number) {
-    console.log("Removing audience with id:", id);  // Log the id
-    return this.prisma.audience.update({
-      where: {
-        id: id,
-      },
-      data: {
-        deleted: true,
-      },
-    });
+  // Supprimer (désactiver) une audience
+  async remove(id: number) {
+    try {
+      const audience = await this.prisma.audience.update({
+        where: { id },
+        data: { deleted: true },
+      });
+      return { message: 'Audience supprimée avec succès', audience };
+    } catch (error) {
+      if (error.code === 'P2025') {
+        throw new HttpException('Audience introuvable. Impossible de supprimer.', HttpStatus.NOT_FOUND);
+      }
+      throw new HttpException(
+        'Erreur lors de la suppression de l’audience. Veuillez réessayer plus tard.',
+        HttpStatus.BAD_REQUEST
+      );
+    }
   }
-  
-  
-  
 
   // Trouver tous les messages associés à une audience spécifique
-  findMessagesByAudience(audience_id: number) {
-    return this.prisma.message.findMany({
-      where: {
-        audience_id,
-      },
-    });
+  async findMessagesByAudience(audience_id: number) {
+    try {
+      const messages = await this.prisma.message.findMany({
+        where: { audience_id },
+      });
+      if (!messages.length) {
+        throw new HttpException('Aucun message trouvé pour cette audience.', HttpStatus.NOT_FOUND);
+      }
+      return { message: 'Messages récupérés avec succès', messages };
+    } catch (error) {
+      throw new HttpException(
+        'Erreur lors de la récupération des messages. Veuillez vérifier l’identifiant de l’audience.',
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
   }
 
   // Trouver tous les contacts associés à une audience spécifique
-  findContactsByAudience(audience_id: number) {
-    return this.prisma.audienceContact.findMany({
-      where: {
-        audience_id,
-      },
-    });
+  async findContactsByAudience(audience_id: number) {
+    try {
+      const contacts = await this.prisma.audienceContact.findMany({
+        where: { audience_id },
+      });
+      if (!contacts.length) {
+        throw new HttpException('Aucun contact trouvé pour cette audience.', HttpStatus.NOT_FOUND);
+      }
+      return { message: 'Contacts récupérés avec succès', contacts };
+    } catch (error) {
+      throw new HttpException(
+        'Erreur lors de la récupération des contacts. Veuillez vérifier l’identifiant de l’audience.',
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
   }
 
-
-
-
-
-
-  // Méthode pour associer un contact à une audience
+  // Associer un contact à une audience
   async addContactToAudience(contactId: number, audienceId: number) {
-    return this.prisma.audienceContact.create({
-      data: {
-        contact_id: contactId,  // contactId -> contact_id
-        audience_id: audienceId,  // audienceId -> audience_id
-      },
-    });
+    try {
+      const contact = await this.prisma.audienceContact.create({
+        data: {
+          contact_id: contactId,
+          audience_id: audienceId,
+        },
+      });
+      return { message: 'Contact ajouté à l’audience avec succès', contact };
+    } catch (error) {
+      if (error.code === 'P2003') {
+        throw new HttpException('Le contact ou l’audience n’existe pas.', HttpStatus.BAD_REQUEST);
+      }
+      throw new HttpException(
+        'Erreur lors de l’ajout du contact à l’audience. Veuillez vérifier les identifiants fournis.',
+        HttpStatus.BAD_REQUEST
+      );
+    }
   }
 
-
-
-
-
-
-
-
-
-
-    //Créer un contrôleur pour recevoir la requête avec la liste des contacts et l'ID de l'audience.
-    async associateContacts(audienceId: number, contacts: { email: string; name: string; phone?: string; username?: string; source?: string }[]) {
-      console.log('Associating contacts with audience ID:', audienceId);
-  
-      // Vérifiez si l'audience existe
+  // Associer un tableau de contacts à une audience
+  async associateContacts(audienceId: number, contacts: { email: string; name: string; phone?: string; username?: string; source?: string }[]) {
+    try {
       const audience = await this.prisma.audience.findUnique({ where: { id: audienceId } });
       if (!audience) {
-        throw new Error('Audience not found');
+        throw new HttpException('Audience introuvable. Impossible d’associer les contacts.', HttpStatus.NOT_FOUND);
       }
-  
-      // Associez les contacts à l'audience
+
       for (const contact of contacts) {
-        // Utilisez une clé unique pour la recherche (assurez-vous que le champ est unique dans votre schéma Prisma)
         const contactRecord = await this.prisma.contact.upsert({
           where: { email: contact.email },
-          update: { 
-            name: contact.name, 
-            phone: contact.phone ?? "" // Assurez-vous de fournir toutes les propriétés requises
-          },
+          update: { name: contact.name, phone: contact.phone ?? '' },
           create: {
             email: contact.email,
             name: contact.name,
-            phone: contact.phone ?? "",
-            username: contact.username ?? "",
-            source: contact.source ?? "",
+            phone: contact.phone ?? '',
+            username: contact.username ?? '',
+            source: contact.source ?? '',
           },
         });
-  
-        // Associez le contact à l'audience
+
         await this.prisma.audienceContact.upsert({
-          where: {
-            audience_id_contact_id: {
-              audience_id: audienceId,
-              contact_id: contactRecord.id,
-            },
-          },
+          where: { audience_id_contact_id: { audience_id: audienceId, contact_id: contactRecord.id } },
           update: {},
-          create: {
-            audience_id: audienceId,
-            contact_id: contactRecord.id,
-          },
+          create: { audience_id: audienceId, contact_id: contactRecord.id },
         });
       }
-  
-      return { message: 'Contacts associated with audience successfully' };
+
+      return { message: 'Contacts associés à l’audience avec succès' };
+    } catch (error) {
+      throw new HttpException(
+        'Erreur lors de l’association des contacts à l’audience. Veuillez vérifier les données fournies.',
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
     }
-
-
-
-
+  }
 }

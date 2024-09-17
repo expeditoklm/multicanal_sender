@@ -20,9 +20,12 @@ export class CreateMessageDto {
   @IsInt()
   channel_id: number;
 
+
+  @IsNotEmpty()
   @IsInt()
   campaign_id: number;
 
+  @IsNotEmpty()
   @IsInt()
   audience_id: number;
 }

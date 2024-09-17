@@ -3,6 +3,6 @@ import { Type } from 'class-transformer';
 
 export class ExtendCampaignDto {
     @Type(() => Date)
-    @IsDate()
-    newEndDate: Date; // La nouvelle date de fin pour la campagne
+    @IsDate({ message: 'La nouvelle date de fin doit être une date valide.' })
+    newEndDate: Date;
 }

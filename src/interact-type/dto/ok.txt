@@ -1,0 +1,20 @@
+import { IsString } from "class-validator";
+
+// src/interactType/dto/create-interactType.dto.ts
+export class CreateInteractTypeDto {
+  @IsString()
+    label: string;
+  }
+  
+
+  import { IsString, IsBoolean } from "class-validator";
+
+// src/interactType/dto/update-interactType.dto.ts
+export class UpdateInteractTypeDto {
+    @IsString()
+
+    label?: string;
+    @IsBoolean()
+    deleted?: boolean;
+  }
+  

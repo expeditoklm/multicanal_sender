@@ -1,0 +1,36 @@
+
+// dto/create-audience.dto.ts
+import { IsInt IsString, IsOptional, IsNotEmpty } from 'class-validator';
+
+export class AddContactToAudienceDto {
+  @IsInt()
+  contactId: number;
+
+  @IsInt()
+  audienceId: number;
+}
+
+
+
+export class CreateAudienceDto {
+  @IsNotEmpty()
+  @IsString()
+  name: string;
+
+  @IsOptional()
+  @IsString()
+  description?: string;
+}
+
+
+export class RemoveContactFromAudienceDto {
+  @IsInt()
+  contactId: number;
+
+  @IsInt()
+  audienceId: number;
+}
+
+
+export class UpdateAudienceDto extends PartialType(CreateAudienceDto) {}
+

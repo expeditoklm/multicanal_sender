@@ -1,0 +1,54 @@
+import { IsArray, IsInt, IsOptional, ArrayNotEmpty } from 'class-validator';
+
+export class AssociateUserToCompaniesDto {
+  @IsInt()
+  userId: number;
+
+  @IsArray()
+  @ArrayNotEmpty()
+  @IsInt({ each: true })
+  companyIds: number[];
+}
+
+
+
+import { IsEmail, IsNotEmpty, IsString, IsOptional, IsBoolean, isInt, IsNumber } from 'class-validator';
+
+export class FindUsersByCompanyDto {
+
+    @IsNumber({}, { message: 'companyId must be a number' })
+    companyId: number;
+  }
+
+  import { IsEmail, IsNotEmpty, IsString, IsOptional, IsBoolean, IsNumber } from 'class-validator';
+
+
+export class GetCompanyByUserDto {
+    @IsNumber({}, { message: 'userId must be a number' })
+    userId: number;
+  }
+
+
+  import { IsEmail, IsNotEmpty, IsString, IsOptional, IsBoolean, IsNumber } from 'class-validator';
+
+export class RemoveUserFromCompanyDto {
+    @IsNumber({}, { message: 'userId must be a number' })
+    userId: number;
+
+    @IsNumber({}, { message: 'companyId must be a number' })
+    companyId: number;
+  }
+
+  import { IsArray, IsInt, IsOptional, ArrayNotEmpty } from 'class-validator';
+
+export class UpdateUserCompanyDto {
+    @IsInt()
+    userId: number;
+  
+    @IsInt()
+    newCompanyId: number;
+  
+    @IsOptional()
+    @IsInt()
+    oldCompanyId?: number;
+  }

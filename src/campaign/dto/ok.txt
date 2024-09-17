@@ -1,0 +1,55 @@
+// create-campaign.dto.ts
+import { IsEnum, IsDate, IsInt, IsOptional, IsString } from 'class-validator';
+import { CampaignStatus } from '@prisma/client';
+
+export class CreateCampaignDto {
+  @IsString()
+  name: string;
+
+  @IsOptional()
+  @IsDate()
+  start_date?: Date;
+
+  @IsOptional()
+  @IsDate()
+  end_date?: Date;
+
+  @IsEnum(CampaignStatus)
+  status: CampaignStatus;
+
+  @IsInt()
+  user_id: number;
+
+  @IsInt()
+  company_id: number;
+}
+
+
+import { IsDate } from 'class-validator';
+import { Type } from 'class-transformer';
+
+export class ExtendCampaignDto {
+    @Type(() => Date)
+    @IsDate()
+    newEndDate: Date; // La nouvelle date de fin pour la campagne
+}
+
+
+import { CampaignStatus } from '@prisma/client'; // Importer l'Enum de Prisma
+
+export class FindCampaignsByStatusDto {
+
+    status: CampaignStatus; // pending, completed, cancelled
+}
+
+
+
+import { PartialType } from '@nestjs/mapped-types';
+import { CreateCampaignDto  } from './createCampaignDto';
+import { IsBoolean, IsOptional } from 'class-validator';
+
+export class UpdateCampaignDto extends PartialType(CreateCampaignDto) {
+  @IsBoolean()
+  @IsOptional()
+  deleted?: boolean;
+}

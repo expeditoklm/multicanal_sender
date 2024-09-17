@@ -3,23 +3,24 @@ import { IsEnum, IsDate, IsInt, IsOptional, IsString } from 'class-validator';
 import { CampaignStatus } from '@prisma/client';
 
 export class CreateCampaignDto {
-  @IsString()
+  @IsString({ message: 'Le nom de la campagne doit être une chaîne de caractères.' })
   name: string;
 
   @IsOptional()
-  @IsDate()
+  @IsDate({ message: 'La date de début doit être une date valide.' })
   start_date?: Date;
 
   @IsOptional()
-  @IsDate()
+  @IsDate({ message: 'La date de fin doit être une date valide.' })
   end_date?: Date;
 
-  @IsEnum(CampaignStatus)
+  @IsEnum(CampaignStatus, { message: 'Le statut doit être valide (pending, completed, cancelled).' })
   status: CampaignStatus;
 
-  @IsInt()
+  @IsInt({ message: 'L\'identifiant de l\'utilisateur doit être un entier.' })
   user_id: number;
 
-  @IsInt()
+  @IsInt({ message: 'L\'identifiant de l\'entreprise doit être un entier.' })
   company_id: number;
 }
+

@@ -2,10 +2,10 @@
 import { IsString, IsOptional, IsBoolean } from 'class-validator';
 
 export class CreateChannelDto {
-  @IsString()
+  @IsString({ message: 'Le label du canal doit être une chaîne de caractères.' })
   label: string;
 
   @IsOptional()
-  @IsBoolean()
+  @IsBoolean({ message: 'Le champ "deleted" doit être un booléen.' })
   deleted?: boolean;
 }
