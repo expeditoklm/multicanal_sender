@@ -43,7 +43,7 @@ export class ChannelService {
 
       });
       if (channels.length === 0) {
-        throw new HttpException('Aucun canal trouvé.', HttpStatus.NOT_FOUND);
+        return 'Aucun canal trouvé.';
       }
       return { message: 'Canaux récupérés avec succès', channels };
     } catch (error) {
@@ -67,12 +67,12 @@ export class ChannelService {
         where: { id },
       });
       if (!channel) {
-        throw new HttpException('Canal introuvable avec cet identifiant.', HttpStatus.NOT_FOUND);
+        return'Canal introuvable avec cet identifiant.';
       }
       return { message: 'Canal trouvé avec succès', channel };
     } catch (error) {
       if (error.code === 'P2025') {
-        throw new HttpException('Aucun canal trouvé avec cet identifiant.', HttpStatus.NOT_FOUND);
+        throw new HttpException('Aucun canal trouvé avec cet identifiant.' , HttpStatus.NOT_FOUND);
       } else if (error.message.includes('Invalid ID')) {
         throw new HttpException('L\'identifiant fourni est invalide.', HttpStatus.BAD_REQUEST);
       }
@@ -97,7 +97,7 @@ export class ChannelService {
       return { message: 'Canal mis à jour avec succès', channel };
     } catch (error) {
       if (error.code === 'P2025') {
-        throw new HttpException('Aucun canal trouvé à mettre à jour.', HttpStatus.NOT_FOUND);
+        throw new HttpException('Aucun canal trouvé à mettre à jour.' , HttpStatus.NOT_FOUND);
       } else if (error.message.includes('Unique constraint')) {
         throw new HttpException('Le label est déjà utilisé par un autre canal.', HttpStatus.CONFLICT);
       } else if (error.message.includes('Cannot update')) {
@@ -142,7 +142,7 @@ export class ChannelService {
         },
       });
       if (messages.length === 0) {
-        throw new HttpException('Aucun message trouvé pour ce canal.', HttpStatus.NOT_FOUND);
+        return 'Aucun message trouvé pour ce canal.';
       }
       return { message: 'Messages du canal récupérés avec succès', messages };
     } catch (error) {

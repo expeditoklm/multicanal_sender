@@ -49,7 +49,7 @@ export class AudienceService {
     try {
       const audience = await this.prisma.audience.findUnique({ where: { id } });
       if (!audience) {
-        throw new HttpException('Audience introuvable. Vérifiez l’identifiant.', HttpStatus.NOT_FOUND);
+        return 'Audience introuvable. Vérifiez l’identifiant.';
       }
       return { message: 'Audience trouvée avec succès', audience };
     } catch (error) {
@@ -70,7 +70,7 @@ export class AudienceService {
       return { message: 'Audience mise à jour avec succès', audience };
     } catch (error) {
       if (error.code === 'P2025') {
-        throw new HttpException('Audience introuvable. Impossible de mettre à jour.', HttpStatus.NOT_FOUND);
+        return 'Audience introuvable. Impossible de mettre à jour.';
       }
       throw new HttpException(
         'Erreur lors de la mise à jour de l’audience. Vérifiez les données fournies.',
@@ -89,7 +89,7 @@ export class AudienceService {
       return { message: 'Audience supprimée avec succès', audience };
     } catch (error) {
       if (error.code === 'P2025') {
-        throw new HttpException('Audience introuvable. Impossible de supprimer.', HttpStatus.NOT_FOUND);
+        return 'Audience introuvable. Impossible de supprimer.';
       }
       throw new HttpException(
         'Erreur lors de la suppression de l’audience. Veuillez réessayer plus tard.',
@@ -105,7 +105,7 @@ export class AudienceService {
         where: { audience_id },
       });
       if (!messages.length) {
-        throw new HttpException('Aucun message trouvé pour cette audience.', HttpStatus.NOT_FOUND);
+        return 'Aucun message trouvé pour cette audience.';
       }
       return { message: 'Messages récupérés avec succès', messages };
     } catch (error) {
@@ -123,7 +123,7 @@ export class AudienceService {
         where: { audience_id },
       });
       if (!contacts.length) {
-        throw new HttpException('Aucun contact trouvé pour cette audience.', HttpStatus.NOT_FOUND);
+        return 'Aucun contact trouvé pour cette audience.';
       }
       return { message: 'Contacts récupérés avec succès', contacts };
     } catch (error) {
@@ -160,7 +160,7 @@ export class AudienceService {
     try {
       const audience = await this.prisma.audience.findUnique({ where: { id: audienceId } });
       if (!audience) {
-        throw new HttpException('Audience introuvable. Impossible d’associer les contacts.', HttpStatus.NOT_FOUND);
+        return 'Audience introuvable. Impossible d’associer les contacts.';
       }
 
       for (const contact of contacts) {

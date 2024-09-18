@@ -1,7 +1,7 @@
 import { Controller, Get, Param, Post, Body, Patch } from '@nestjs/common';
 import { CampaignService } from './campaign.service';
 import { CreateCampaignDto } from './dto/createCampaign.dto';
-import { UpdateCampaignDto } from './dto/updateCampaignDto';
+import { UpdateCampaignDto } from './dto/updateCampaign.dto';
 import { ExtendCampaignDto } from './dto/extendCampaign.dto';
 import { ApiTags, ApiOperation, ApiParam, ApiBody } from '@nestjs/swagger';
 

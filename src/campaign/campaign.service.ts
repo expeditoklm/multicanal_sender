@@ -2,7 +2,7 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateCampaignDto } from './dto/createCampaign.dto';
-import { UpdateCampaignDto } from './dto/updateCampaignDto';
+import { UpdateCampaignDto } from './dto/updateCampaign.dto';
 import { ExtendCampaignDto } from './dto/extendCampaign.dto';
 import { CampaignStatus } from '@prisma/client';
 
@@ -71,7 +71,7 @@ export class CampaignService {
                 where: { id, deleted: false },
             });
             if (!campaign) {
-                throw new HttpException('Campagne introuvable. Vérifiez l’identifiant.', HttpStatus.NOT_FOUND);
+                return 'Campagne introuvable. Vérifiez l’identifiant.';
             }
             return { message: 'Campagne trouvée avec succès', campaign };
         } catch (error) {
@@ -97,7 +97,7 @@ export class CampaignService {
                 data: { ...updateCampaignDto, status: updateCampaignDto.status || undefined },
             });
             if (campaign.count === 0) {
-                throw new HttpException('Campagne introuvable. Impossible de mettre à jour.', HttpStatus.NOT_FOUND);
+                return 'Campagne introuvable. Impossible de mettre à jour.';
             }
             return { message: 'Campagne mise à jour avec succès', campaign };
         } catch (error) {
@@ -148,7 +148,7 @@ export class CampaignService {
                 where: { user_id: userId, deleted: false },
             });
             if (campaigns.length === 0) {
-                throw new HttpException('Aucune campagne trouvée pour cet utilisateur.', HttpStatus.NOT_FOUND);
+                return 'Aucune campagne trouvée pour cet utilisateur.';
             }
             return { message: 'Campagnes de l’utilisateur récupérées avec succès', campaigns };
         } catch (error) {
@@ -173,7 +173,7 @@ export class CampaignService {
                 where: { status, deleted: false },
             });
             if (campaigns.length === 0) {
-                throw new HttpException('Aucune campagne trouvée pour ce statut.', HttpStatus.NOT_FOUND);
+                return 'Aucune campagne trouvée pour ce statut.';
             }
             return { message: 'Campagnes récupérées avec succès', campaigns };
         } catch (error) {
@@ -270,7 +270,7 @@ export class CampaignService {
                 where: { company_id: companyId, deleted: false },
             });
             if (campaigns.length === 0) {
-                throw new HttpException('Aucune campagne trouvée pour cette entreprise.', HttpStatus.NOT_FOUND);
+                return 'Aucune campagne trouvée pour cette entreprise.';
             }
             return { message: 'Campagnes de l’entreprise récupérées avec succès', campaigns };
         } catch (error) {
