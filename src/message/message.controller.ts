@@ -5,6 +5,7 @@ import { UpdateMessageDto } from './dto/updateMessage.dto';
 import { SendMessageDto } from './dto/sendMessage.dto';
 import { GetMessagesByStatusDto } from './dto/getMessagesByStatus.dto';
 import { ApiTags, ApiOperation, ApiBody, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
+import { ScheduleMessageDto } from './dto/scheduleMessage.dto';
 
 @ApiTags('Messages')  // Catégorie Swagger pour les messages
 @Controller('messages')
@@ -84,4 +85,47 @@ export class MessageController {
   async retryFailedMessages() {
     return this.messageService.retryFailedMessages();
   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  @Post('schedule')
+  @ApiOperation({ summary: 'Planifier un nouveau message' })  // Résumé pour Swagger
+  @ApiBody({ description: 'Données pour planifier un message', type: ScheduleMessageDto })  // Corps de la requête attendu
+  @ApiResponse({ status: 201, description: 'Message planifié avec succès.' })  // Réponse attendue
+  async scheduleMessageCreate(@Body() scheduleMessageDto: ScheduleMessageDto) {
+    return this.messageService.scheduleMessageCreate(scheduleMessageDto);
+  }
+    
+
+
+
+
+
 }

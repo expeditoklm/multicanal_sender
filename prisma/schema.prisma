@@ -5,20 +5,19 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
+    provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
+    provider = "mysql"
+    url      = env("DATABASE_URL")
 }
-
 
 model User {
     id         Int      @id @default(autoincrement())
     name       String?
-    username   String?   
-    email      String    @unique 
+    username   String?
+    email      String   @unique
     role       String
     password   String
     deleted    Boolean  @default(false)
@@ -35,11 +34,16 @@ model User {
 }
 
 model Company {
-    id              Int      @id @default(autoincrement())
-    name            String
-    description     String?
-    link_fb         String?
-    link_tiktok     String?
+    id             Int     @id @default(autoincrement())
+    name           String
+    description    String?
+    link_fb        String?
+    link_tiktok    String?
+    link_insta     String?
+    link_twit      String?
+    link_youtube   String?
+    link_pinterest String?
+    link           String?
     secondary_color String?
     primary_color   String?
     tertiary_color  String?
@@ -70,29 +74,28 @@ model UserCompany {
     // Relations
     user    User    @relation(fields: [user_id], references: [id])
     company Company @relation(fields: [company_id], references: [id])
-    
 
-    @@map("user_company")
     @@unique([user_id, company_id])
+    @@map("user_company")
 }
 
 enum CampaignStatus {
-  PENDING
-  COMPLETED
-  CANCELLED
+    PENDING
+    COMPLETED
+    CANCELLED
 }
 
 model Campaign {
-    id         Int      @id @default(autoincrement())
+    id         Int            @id @default(autoincrement())
     name       String
     start_date DateTime?
     end_date   DateTime?
     status     CampaignStatus
     user_id    Int
     company_id Int
-    deleted    Boolean  @default(false)
-    created_at DateTime @default(now())
-    updated_at DateTime @updatedAt
+    deleted    Boolean        @default(false)
+    created_at DateTime       @default(now())
+    updated_at DateTime       @updatedAt
 
     // Relations
     user    User    @relation(fields: [user_id], references: [id])
@@ -170,25 +173,26 @@ model AudienceContact {
     @@map("audiences_contacts")
 }
 
-
-
 enum MessageStatus {
-  PENDING
-  SENT
-  FAILED
+    PENDING
+    SENT
+    FAILED
 }
 
 model Message {
-    id          Int      @id @default(autoincrement())
-    object      String
-    content     String
+    id             Int       @id @default(autoincrement())
+    object         String
+    content        String
+    scheduled      Boolean   @default(false)
+    scheduled_date DateTime? // <-- Supprimer @updatedAt pour gérer manuellement la date de planification
+
     status      MessageStatus
     channel_id  Int
     campaign_id Int
     audience_id Int
-    deleted     Boolean  @default(false)
-    created_at  DateTime @default(now())
-    updated_at  DateTime @updatedAt
+    deleted     Boolean       @default(false)
+    created_at  DateTime      @default(now())
+    updated_at  DateTime      @updatedAt
 
     // Relations
     channel  Channel  @relation(fields: [channel_id], references: [id])
@@ -217,6 +221,7 @@ model InteractType {
 
 model MessageContact {
     id               Int      @id @default(autoincrement())
+    hasRecevedMsg    Boolean  @default(true)
     interact_date    DateTime
     message_id       Int
     contact_id       Int
@@ -266,7 +271,7 @@ model TemplateType {
 }
 
 model TemplateCampaign {
-    id          Int    @id @default(autoincrement())
+    id          Int     @id @default(autoincrement())
     message_id  Int
     template_id Int
     campaign_id Int
@@ -288,5 +293,3 @@ model TemplateCampaign {
 
     @@map("template_campaigns")
 }
-
- 

@@ -1,9 +1,15 @@
-import { Controller, Get, Post, Body, Param, Put, Delete } from '@nestjs/common';
+import { Controller, Get, Post,UploadedFile, UseInterceptors, Body, Param, Put, Delete, HttpException, HttpStatus } from '@nestjs/common';
 import { AudienceService } from './audience.service';
 import { CreateAudienceDto } from './dto/createAudience.dto';
 import { UpdateAudienceDto } from './dto/updateAudience.dto';
 import { AddContactToAudienceDto } from './dto/addContactToAudience.dto';
-import { ApiTags, ApiOperation, ApiBody, ApiParam, ApiQuery } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBody, ApiParam, ApiQuery, ApiConsumes, ApiResponse } from '@nestjs/swagger';
+
+
+import { FileInterceptor } from '@nestjs/platform-express';
+import * as xlsx from 'xlsx';
+import * as csvParser from 'csv-parser';
+import * as fs from 'fs';
 
 @ApiTags('Audience') // Groupe de routes pour Swagger
 @Controller('audiences')
@@ -76,4 +82,100 @@ export class AudienceController {
   ) {
     return this.audienceService.associateContacts(parseInt(audienceId), contacts);
   }
+
+
+
+
+  @ApiOperation({ summary: 'Upload a file and associate contacts to an audience' }) // Documentation pour la route
+  @ApiParam({ name: 'audienceId', type: 'number', description: 'ID of the audience to associate contacts with' }) // Documentation du paramètre `audienceId`
+  @ApiConsumes('multipart/form-data') // Indique que la route consomme des fichiers via multipart
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  }) // Décrit le body de la requête (ici un fichier)
+  @ApiResponse({ status: 200, description: 'Contacts successfully associated with the audience' }) // Réponse de succès
+  @ApiResponse({ status: 404, description: 'Audience not found' }) // Réponse d'erreur
+
+  @Post(':audienceId/upload')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadContacts(@Param('audienceId') audienceId: number, @UploadedFile() file: Express.Multer.File) {
+    // Assurez-vous que la clé 'file' est bien utilisée dans le fichier envoyé depuis Postman
+    try {
+      const contacts = await this.parseFile(file);
+      console.log(contacts);
+      return this.audienceService.associateContacts(audienceId, contacts);
+    } catch (error) {
+      throw new HttpException(
+        'Error occurred while uploading contacts. Please check the file format.',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+
+
+
+async parseFile(file: Express.Multer.File) {
+  const contacts: { email: string; name: string; phone?: string; username?: string; source?: string }[] = [];
+
+  if (file.mimetype === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
+      // Gérer le fichier Excel
+      const workbook = xlsx.read(file.buffer, { type: 'buffer' });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      
+      // Lire les données en considérant la première ligne comme entête
+      const jsonData: (string | number)[][] = xlsx.utils.sheet_to_json(sheet, { header: 1 });
+      const headers: string[] = jsonData[0] as string[]; // Cast de la première ligne en tableau de chaînes
+      const dataRows = jsonData.slice(1); // Récupérer les lignes de données
+
+      // Normaliser les données
+      const normalizedData = dataRows.map((row: (string | number)[]) => {
+          return {
+              email: row[headers.indexOf('email')]?.toString().trim(),
+              name: row[headers.indexOf('name')]?.toString().trim(),
+              phone: row[headers.indexOf('phone')]?.toString(),
+              username: row[headers.indexOf('username')]?.toString().trim(),
+              source: row[headers.indexOf('source')]?.toString().trim(),
+          };
+      });
+      contacts.push(...normalizedData);
+
+  }else if (file.mimetype === 'text/csv') {
+      // Gérer le fichier CSV avec un point-virgule comme séparateur
+      const csv = file.buffer.toString('utf-8'); // Convertit le fichier en chaîne de caractères
+      const rows = csv.split('\n');
+      const headers = rows[0].split(';'); // Utilisez le point-virgule comme séparateur
+  
+      for (let i = 1; i < rows.length; i++) {
+        const values = rows[i].split(';'); // Utilisez le point-virgule comme séparateur
+        let contact: any = {};
+        headers.forEach((header, index) => {
+          contact[header.trim()] = values[index]?.trim();
+        });
+        contacts.push(contact);
+      }
+    } else {
+      throw new Error('Unsupported file format');
+    }
+  
+    return contacts;
+}
+
+
+
+
+
+
+
+
+
+
+
 }

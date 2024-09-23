@@ -3,10 +3,16 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateMessageDto } from './dto/createMessage.dto';
 import { UpdateMessageDto } from './dto/updateMessage.dto';
 import { MessageStatus } from '@prisma/client';
+import { MailerService } from 'src/mailer/mailer.service';
+
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { ScheduleMessageDto } from './dto/scheduleMessage.dto';
 
 @Injectable()
 export class MessageService {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService,
+    private readonly emailService: MailerService
+  ) { }
 
   async create(createMessageDto: CreateMessageDto) {
     const { object, content, status, channel_id, campaign_id, audience_id } = createMessageDto;
@@ -138,34 +144,107 @@ export class MessageService {
       throw new InternalServerErrorException('Une erreur est survenue lors de la suppression du message. Veuillez réessayer plus tard.');
     }
   }
+  // Main function to send a message to all contacts
+  async sendMessage(messageId: number): Promise<string> {
 
-  async sendMessage(messageId: number) {
     if (isNaN(messageId)) {
-      throw new BadRequestException('L\'ID du message est invalide. Veuillez fournir un ID numérique valide.');
+      console.error(`ID du message non valide: ${messageId}`);
+      throw new BadRequestException("L'ID du message est invalide. Veuillez fournir un ID numérique valide.");
     }
 
     try {
+      // Récupérer le message
       const message = await this.prisma.message.findUnique({
         where: { id: messageId },
       });
 
       if (!message) {
-        throw new NotFoundException(`Le message avec l'ID ${messageId} n'existe pas.`);
+        return `Le message avec l'ID ${messageId} n'existe pas.`;
       }
 
       if (message.deleted) {
-        throw new NotFoundException(`Le message avec l'ID ${messageId} a déjà été supprimé.`);
+        return `Le message avec l'ID ${messageId} a déjà été supprimé.`;
       }
 
-      // Logique pour envoyer le message via le canal
-      // Note : Vous devrez probablement intégrer cette logique en fonction de votre implémentation de canal.
-      // Par exemple, appeler un service de canal pour envoyer le message.
+      // Récupérer les contacts liés à l'audience du message
+      const contacts = await this.prisma.audienceContact.findMany({
+        where: {
+          audience_id: message.audience_id,
+        },
+      });
+      console.log("Contacts liés à l'audience récupérés:", contacts);
 
-      return `Message avec l'ID ${messageId} envoyé avec succès.`;
+      if (!contacts.length) {
+        throw new NotFoundException("Aucun contact trouvé pour l'audience spécifiée.");
+      }
+
+      const updatedMessage = await this.prisma.message.update({
+        where: { id: messageId },
+        data: { status: "SENT" }, // Utilisez "data" pour spécifier les champs à mettre à jour
+      });
+      
+
+      // Tableau pour suivre les contacts échoués
+      const failedContacts = [];
+
+      // Envoi d'e-mails aux contacts
+      const sendMailPromises = contacts.map(async (contact) => {
+        const _1contact = await this.prisma.contact.findFirst({
+          where: {
+            id: contact.contact_id,
+          },
+        });
+
+        try {
+          await this.emailService.sendMail(_1contact, message);
+
+          // Créer l'entrée dans `messageContact` pour chaque contact
+          await this.prisma.messageContact.create({
+            data: {
+              message_id: messageId,
+              contact_id: _1contact.id, // Utilisation du `id` du contact
+              hasRecevedMsg: true,
+              interact_date: new Date(),
+              interact_type_id: 1,
+              deleted: false,
+            },
+          });
+
+          console.log(`Envoi en file d'attente pour le contact: ${_1contact.email}`);
+        } catch (error) {
+          failedContacts.push(contact); // Ajouter aux contacts échoués
+        }
+      });
+
+      await Promise.all(sendMailPromises);
+      console.log(`Tous les contacts traités pour le message avec l'ID: ${messageId}`);
+
+      // Mise à jour des contacts échoués
+      if (failedContacts.length > 0) {
+        await Promise.all(failedContacts.map(async (contact) => {
+          await this.prisma.messageContact.updateMany({
+            where: {
+              message_id: messageId,
+              contact_id: contact.contact_id,
+            },
+            data: {
+              hasRecevedMsg: false,
+              updated_at: new Date(),
+            },
+          });
+        }));
+      }
+
+      return `Message avec l'ID ${messageId} envoyé avec succès. Contacts échoués : ${failedContacts.length}.`;
+
     } catch (error) {
-      throw new InternalServerErrorException('Une erreur est survenue lors de l\'envoi du message. Veuillez réessayer plus tard.');
+      console.error("Erreur lors de l'envoi du message:", error);
+      throw new InternalServerErrorException(
+        "Une erreur est survenue lors de l'envoi du message. Veuillez réessayer plus tard.",
+      );
     }
   }
+
 
   async getMessagesByStatus(status: MessageStatus) {
     try {
@@ -191,19 +270,232 @@ export class MessageService {
     }
   }
 
-  async retryFailedMessages() {
+  async retryFailedMessages(): Promise<string> {
     try {
-      const failedMessages = await this.prisma.message.findMany({
-        where: { status: MessageStatus.FAILED, deleted: false },
+      // Récupérer tous les enregistrements de messageContact où hasRecevedMsg est faux
+      const failedMessageContacts = await this.prisma.messageContact.findMany({
+        where: { hasRecevedMsg: false },
+        include: {
+          message: true, // Inclut le message associé
+          contact: true, // Inclut les détails du contact
+        },
       });
-
-      // Logique pour relancer les messages échoués
-      // Note : Vous devrez probablement intégrer cette logique en fonction de votre implémentation
-      // Par exemple, réessayer d'envoyer chaque message via un service de canal.
-
-      return `Relance de ${failedMessages.length} messages échoués en cours.`;
+  
+      if (!failedMessageContacts.length) {
+        return 'Aucun contact échoué à renvoyer.';
+      }
+  
+      // Réinitialiser la liste des contacts échoués après cette tentative
+      const retryFailedContacts = [];
+  
+      // Tentative de réenvoyer les messages
+      const retryPromises = failedMessageContacts.map(async (messageContact) => {
+        try {
+          await this.emailService.sendMail(messageContact.contact, messageContact.message);
+  
+          // Mettre à jour l'enregistrement après la réussite de l'envoi
+          await this.prisma.messageContact.update({
+            where: { id: messageContact.id },
+            data: {
+              hasRecevedMsg: true,
+              updated_at: new Date(),
+            },
+          });
+  
+          console.log(`Message renvoyé avec succès au contact: ${messageContact.contact.email}`);
+        } catch (error) {
+          retryFailedContacts.push(messageContact); // Enregistrer si l'envoi échoue à nouveau
+          console.error(`Échec du renvoi au contact: ${messageContact.contact.email}`, error);
+        }
+      });
+  
+      // Attendre que toutes les tentatives soient terminées
+      await Promise.all(retryPromises);
+  
+      // Mise à jour des contacts échoués après la tentative de renvoi
+      if (retryFailedContacts.length > 0) {
+        await Promise.all(retryFailedContacts.map(async (contact) => {
+          await this.prisma.messageContact.updateMany({
+            where: { contact_id: contact.contact_id },
+            data: {
+              hasRecevedMsg: false,
+              updated_at: new Date(),
+            },
+          });
+        }));
+      }
+  
+      // Retourner un résumé de l'opération
+      return `Tentatives de renvoi terminées. Contacts échoués : ${retryFailedContacts.length}.`;
+  
     } catch (error) {
-      throw new InternalServerErrorException('Une erreur est survenue lors de la relance des messages échoués. Veuillez réessayer plus tard.');
+      console.error('Erreur lors du renvoi des messages échoués:', error);
+      throw new InternalServerErrorException('Erreur lors du renvoi des messages. Veuillez réessayer plus tard.');
     }
   }
+
+
+  async scheduleMessageCreate(scheduleMessageDto: ScheduleMessageDto) {
+    const currentDate = new Date();
+    console.log(currentDate)
+
+    const { messageId, scheduledDate } = scheduleMessageDto;
+
+    // Conversion de la chaîne de caractères en objet Date si nécessaire
+    if (typeof scheduledDate === 'string') {
+      scheduleMessageDto.scheduledDate = new Date(scheduledDate);
+      if (isNaN(scheduleMessageDto.scheduledDate.getTime())) {
+        throw new BadRequestException("La date programmée n'est pas valide.");
+      }
+    }
+
+    if (isNaN(messageId)) {
+      console.error(`ID du message non valide: ${messageId}`);
+      throw new BadRequestException("L'ID du message est invalide. Veuillez fournir un ID numérique valide.");
+    }
+
+    try {
+      // Récupérer le message
+      const message = await this.prisma.message.findUnique({
+        where: { id: messageId },
+      });
+
+      if (!message) {
+        return `Le message avec l'ID ${messageId} n'existe pas.`;
+      }
+
+      if (message.deleted) {
+        return `Le message avec l'ID ${messageId} a déjà été supprimé.`;
+      }
+
+
+   
+      
+      // Mise à jour du message pour planifier l'envoi
+      await this.prisma.message.update({
+        where: { id: messageId },
+        data: {status: "PENDING" , scheduled: true, scheduled_date: scheduleMessageDto.scheduledDate },
+      });
+
+      return `Message avec l'ID ${messageId} programmé pour le ${scheduleMessageDto.scheduledDate}.`;
+
+    } catch (error) {
+      throw new InternalServerErrorException('Une erreur est survenue lors de la création du message. Veuillez réessayer plus tard.');
+    }
+}
+
+
+
+// Cron job pour vérifier et envoyer les messages programmés
+@Cron("*/5 * * * * *") // Vérification toutes les 5 secondes
+async sendScheduledMessages() {
+
+    const currentDate = new Date();
+
+    // Récupérer les messages programmés pour envoi
+    const messages = await this.prisma.message.findMany({
+        where: {
+            scheduled: true,
+            scheduled_date: { lte: currentDate }, // Messages dont la date de programmation est arrivée
+        },
+    });
+
+
+    // Pour chaque message programmé, appeler sendMessage
+    for (const message of messages) {
+        
+        await this.sendMessage(message.id);
+
+        // Mettre à jour le message après l'envoi pour éviter les envois répétés
+        await this.prisma.message.update({
+            where: { id: message.id },
+            data: { scheduled: false }, // Désactiver le flag 'scheduled' après l'envoi
+        });
+
+    }
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
 }

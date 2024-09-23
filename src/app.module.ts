@@ -16,12 +16,50 @@ import { AudienceContactModule } from './audience-contact/audience-contact.modul
 import { TemplateTypeModule } from './template-type/template-type.module';
 import { TemplateModule } from './template/template.module';
 import { TemplateCampaignModule } from './template-campaign/template-campaign.module';
+import { BullModule } from '@nestjs/bull';
+import Redis from 'ioredis';
 
+const redisProvider = {
+  provide: 'REDIS_CLIENT',
+  useFactory: () => {
+    return new Redis({
+      host: 'localhost',
+      port: 6379,
+      maxRetriesPerRequest: 100, // Ajuste cette valeur si nécessaire
+    });
+  },
+};
 
 @Module({
-  imports: [ConfigModule.forRoot({isGlobal: true}),AuthModule, PrismaModule, MailerModule, CompanyModule, UserCompanyModule, CampaignModule, ChannelModule, AudienceModule, ContactModule, MessageModule, InteractTypeModule, MessageContactModule, AudienceContactModule, TemplateTypeModule, TemplateModule, TemplateCampaignModule],
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    BullModule.forRoot({
+      redis: {
+        host: 'localhost',
+        port: 6379,
+      },
+    }),
+    BullModule.registerQueue({
+      name: 'mailQueue',
+    }),
+    MailerModule,
+    AuthModule,
+    PrismaModule,
+    CompanyModule,
+    UserCompanyModule,
+    CampaignModule,
+    ChannelModule,
+    AudienceModule,
+    ContactModule,
+    MessageModule,
+    InteractTypeModule,
+    MessageContactModule,
+    AudienceContactModule,
+    TemplateTypeModule,
+    TemplateModule,
+    TemplateCampaignModule,
+  ],
   controllers: [],
-  providers: [],
+  providers: [redisProvider], // Ajoute ici le provider Redis
 })
 export class AppModule {}
- 

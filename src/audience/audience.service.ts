@@ -191,4 +191,44 @@ export class AudienceService {
       );
     }
   }
+
+
+
+  async associateContactsWithFiles(audienceId: number, contacts: { email: string; name: string; phone?: string; username?: string; source?: string }[]) {
+    try {
+      const audience = await this.prisma.audience.findUnique({ where: { id: audienceId } });
+      if (!audience) {
+        return 'Audience introuvable. Impossible d’associer les contacts.';
+      }
+
+      for (const contact of contacts) {
+        const contactRecord = await this.prisma.contact.upsert({
+          where: { email: contact.email },
+          update: { name: contact.name, phone: contact.phone ?? '' },
+          create: {
+            email: contact.email,
+            name: contact.name,
+            phone: contact.phone ?? '',
+            username: contact.username ?? '',
+            source: contact.source ?? '',
+          },
+        });
+
+        await this.prisma.audienceContact.upsert({
+          where: { audience_id_contact_id: { audience_id: audienceId, contact_id: contactRecord.id } },
+          update: {},
+          create: { audience_id: audienceId, contact_id: contactRecord.id },
+        });
+      }
+
+      return { message: 'Contacts associés à l’audience avec succès' };
+    } catch (error) {
+      throw new HttpException(
+        'Erreur lors de l’association des contacts à l’audience. Veuillez vérifier les données fournies.',
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+
 }

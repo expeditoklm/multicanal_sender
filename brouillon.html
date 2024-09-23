@@ -1,0 +1,726 @@
+interface en ligne de commande Nest Js
+npm i -g @nestjs/cli
+Generer un projet nestjs
+nest new .
+Installer Prisma
+npm i -D prisma
+Initialiser prisma
+npx prisma init
+configurer le fichier .env
+DATABASE_URL="mysql://root:yourpassword@localhost:3306/nest_db"
+lancer une migration
+npx prisma migrate dev --name create_users_table et npx prisma generate(couper le serveur)
+npx prisma migrate dev --name update_companies_table et npx prisma generate(couper le serveur)
+npx prisma migrate dev
+visionner les tables a travers le navigateur
+npx prisma studio
+demarrer le serveur nest 
+npm run start:dev
+Generer un module
+nest g mo auth
+Generer un controller
+nest g co auth
+Generer un service
+nest g s auth
+supprimer le controller de base && le service de base && le  fichier test de base
+
+installer le validator et transformer
+npm i -- save class-transformer class-validator
+configurer globalement la validation  
+creer un module && service prisma
+configurer le service prisma
+npm install @prisma/client
+installer un nouveau package  pour importer les variables d'environnement
+npm i -- save @nestjs/config
+installer bcrypte pour le hashage des mots de passe
+npm i bcrypt
+rajoutter a linstallation une dependance de developpement
+npm i -D @types/bcrypt
+creer module et service pour lenvoie de mail
+installer un package de mail 
+npm i nodemailer
+npm i -D @types/nodemailer
+installer le serveur de mail mailhog
+https://github.com/mailhog/MailHog/releases/v1.0.0
+
+generation de token jwt
+npm install -- save @nestjs/jwt passport-jwt
+npm install --save-dev @types/passport-jwt
+Generer un code OTP en installant la librairie speakeasy
+npm i speakeasy
+npm i -D @types/speakeasy
+
+stratégie pour dechiffer le code jwt
+npm i -- save @nestjs/passport passport 
+npm i -- save-dev @types/passport
+Generer un service pour la stratégie d'authentification
+Documentation api
+Installer le module swagger
+npm i -D @nestjs/swagger
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+https://www.youtube.com/watch?v=atENGRR0Rg4
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import { InjectQueue, Processor, Process } from '@nestjs/bull';
+import { Injectable } from '@nestjs/common';
+import { Queue, Job } from 'bull';
+import * as nodemailer from 'nodemailer';
+import * as path from 'path';
+import * as hbs from 'nodemailer-express-handlebars';
+import { PrismaService } from 'src/prisma/prisma.service';
+
+@Processor('mailQueue')
+@Injectable()
+export class MailerService {
+    private transporter: nodemailer.Transporter;
+
+    constructor(
+        @InjectQueue('mailQueue') private readonly mailQueue: Queue,
+        private readonly prisma: PrismaService,
+    ) {
+        this.initializeTransporter();
+    }
+
+    // Initialize the transporter and configure Handlebars for email templates
+    private async initializeTransporter() {
+        const testAccount = await nodemailer.createTestAccount();
+        this.transporter = nodemailer.createTransport({
+            host: 'localhost',
+            port: 1025,
+            ignoreTLS: true,
+            auth: {
+                user: testAccount.user,
+                pass: testAccount.pass,
+            },
+        });
+
+        import('nodemailer-express-handlebars').then((hbs) => {
+            const handlebarOptions = {
+                viewEngine: {
+                    extName: '.hbs',
+                    partialsDir: path.resolve('./src/message/templates/'), // Chemin corrigé
+                    defaultLayout: false,
+                },
+                viewPath: path.resolve('./src/message/templates/'), // Chemin corrigé
+                extName: '.hbs',
+            };
+    
+            this.transporter.use('compile', hbs(handlebarOptions));
+        }).catch((error) => {
+            console.error('Error importing nodemailer-express-handlebars:', error);
+        });
+
+        this.transporter.use('compile', hbs(handlebarOptions));
+    }
+
+    // Function to send an email with a given template and context
+    private async sendEmail(to: string, subject: string, context: any, template: string) {
+        const mailOptions = {
+            from: 'app@localhost.com',
+            to,
+            subject,
+            template,
+            context,
+        };
+
+        return this.transporter.sendMail(mailOptions);
+    }
+
+    // Function to send signup confirmation email
+    async sendSignupConfirmation(email: string) {
+        await this.sendEmail(email, 'INSCRIPTION', {}, 'signup_confirmation');
+    }
+
+    // Function to send reset password email with a link and code
+    async sendResetPassword(email: string, url: string, code: string) {
+        const context = {
+            url,
+            code,
+        };
+
+        await this.sendEmail(email, 'RÉINITIALISATION DU MOT DE PASSE', context, 'reset_password');
+    }
+
+    // Function to queue an email sending task
+    async sendMail(_1contact: any, message: any) {
+        console.log(`Début de la mise en file d'attente pour le contact: ${_1contact.email}`);
+        try {
+            console.log(`Ajout du job à la queue pour le contact : ${_1contact.email}`);
+            const job = await this.mailQueue.add('send-mail', { _1contact, message });
+            console.log(`Envoi en file d'attente réussi pour le contact: ${_1contact.email}`);
+        } catch (error) {
+            console.error(`Erreur lors de la mise en file d'attente pour le contact: ${_1contact.email}`, error);
+        }
+    }
+
+    async sendToContact(_1contact: any, message: any): Promise<void> {
+        console.log(`Envoi du message pour le contact: ${_1contact.email}`);
+        await this.sendMail(_1contact, message);
+        console.log(`Message mis en file d'attente pour le contact: ${_1contact.email}`);
+    }
+
+    // Handle the 'send-mail' process job from the mailQueue
+    @Process('send-mail')
+    async handleSendMail(job: Job) {
+        const { _1contact, message } = job.data;
+        console.log(`Préparation de l'envoi de l'email à: ${_1contact.email}`);
+        try {
+            const templateCampaign = await this.prisma.templateCampaign.findFirst({
+                where: { message_id: message.id },
+                include: {
+                    campaign: true,
+                    template: true,
+                },
+            });
+
+            if (!templateCampaign) {
+                throw new Error(`Aucune campagne trouvée pour le message ID: ${message.id}`);
+            }
+
+            const mailOptions = {
+                from: 'app@localhost.com',
+                to: _1contact.email,
+                subject: message.subject,
+                template: 'template', // Le nom du fichier .hbs dans /templates/
+                context: {
+                    firstName: _1contact.name,
+                    lastName: _1contact.username,
+                    message: message.content,
+                },
+            };
+
+            await this.transporter.sendMail(mailOptions);
+            console.log(`Email envoyé avec succès à: ${_1contact.email}`);
+        } catch (error) {
+            console.error(`Erreur lors de l'envoi de l'email à: ${_1contact.email}`, error);
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import { InjectQueue, Processor, Process } from '@nestjs/bull';
+import { Injectable } from '@nestjs/common';
+import { Queue, Job } from 'bull';
+import * as nodemailer from 'nodemailer';
+
+@Processor('mailQueue')
+@Injectable()
+export class MailerService {
+    constructor(
+        @InjectQueue('mailQueue') private readonly mailQueue: Queue,
+        
+    ) { }
+
+    // Create a Nodemailer transporter with mock account for testing
+    private async createTransporter() {
+        const testAccount = await nodemailer.createTestAccount();
+        return nodemailer.createTransport({
+            host: 'localhost',
+            port: 1025,
+            ignoreTLS: true,
+            auth: {
+                user: testAccount.user,
+                pass: testAccount.pass,
+            },
+        });
+    }
+
+    // Function to send signup confirmation email
+    async sendSignupConfirmation(email: string) {
+        const transporter = await this.createTransporter();
+        await transporter.sendMail({
+            from: 'app@localhost.com',
+            to: email,
+            subject: 'INSCRIPTION',
+            html: '<h1>Signup Confirmation</h1>',
+        });
+    }
+
+    // Function to send reset password email with a link and code
+    async sendResetPassword(email: string, url: string, code: string) {
+        const transporter = await this.createTransporter();
+        await transporter.sendMail({
+            from: 'app@localhost.com',
+            to: email,
+            subject: 'RÉINITIALISATION DU MOT DE PASSE',
+            html: `
+        <h1>Réinitialisation du mot de passe</h1>
+        <p>Pour réinitialiser votre mot de passe, veuillez cliquer sur le lien ci-dessous :</p>
+        <a href="${url}">Cliquez ici pour changer votre mot de passe</a>
+        <p>CODE : ${code}</p>
+        <p>Le code expire dans 15 minutes</p>
+      `,
+        });
+    }
+
+    // Function to queue an email sending task
+
+    async sendMail(_1contact: any, message: any) {
+        console.log(`Début de la mise en file d'attente pour le contact: ${_1contact.email}`);
+        try {
+            console.log(`Ajout du job à la queue pour le contact : ${_1contact.email}`);
+           const job = await this.mailQueue.add('send-mail', { _1contact, message });
+
+            //console.log(...result);
+            console.log(`Envoi en file d'attente réussi pour le contact: ${_1contact.email}`);
+        } catch (error) {
+            console.error(`Erreur lors de la mise en file d'attente pour le contact: ${_1contact.email}`, error);
+        }
+    }
+
+  
+    
+    async sendToContact(_1contact: any, message: any): Promise<void> {
+        console.log(`Envoi du message pour le contact: ${_1contact.email}`);
+        await this.sendMail(_1contact, message);
+        console.log(`Message mis en file d'attente pour le contact: ${_1contact.email}`);
+    }
+    
+
+
+
+    @Process('send-mail')
+    async handleSendMail(job: Job) {
+        const { _1contact, message } = job.data;
+        console.log(`Préparation de l'envoi de l'email à: ${_1contact.email}`);
+        try {
+            const testAccount = await nodemailer.createTestAccount();
+            const transporter = nodemailer.createTransport({
+                host: 'localhost',
+                port: 1025,
+                ignoreTLS: true,
+                auth: {
+                    user: testAccount.user,
+                    pass: testAccount.pass,
+                },
+            });
+            const mailOptions = {
+                from: 'app@localhost.com',
+                to: _1contact.email,
+                subject: message.subject,
+                text: message.content,
+            };
+            await transporter.sendMail(mailOptions);
+            console.log(`Email envoyé avec succès à: ${_1contact.email}`);
+        } catch (error) {
+            console.error(`Erreur lors de l'envoi de l'email à: ${_1contact.email}`, error);
+        }
+    }
+
+
+
+
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Email Template</title>
+</head>
+<body>
+  <h1>Hello, {{name}} {{username}}</h1>
+  <p>{{messageContent}}</p>
+
+{{name}} 
+{{username}} 
+{{messageObjet}} 
+{{messageContent}} 
+{{campaignName}} 
+{{campaignStartDate}} 
+{{campaignEndDate}} 
+{{templateCampaignTitle}} 
+{{templateCampaignDesc}} 
+{{templateCampaignLink}} 
+{{templateCampaignBtnText}} 
+{{templateCampaignBtnLink}} 
+{{templateCampaignImg}} 
+{{companyName}} 
+{{companyDesc}} 
+{{companyLinkFb}} 
+{{companyLinkTiktok}} 
+{{companySecondColor}} 
+{{companyPrimaryColor}} 
+{{companyTertiaryColor}} 
+{{companyPhone}} 
+{{companyWhatsapp}} 
+{{companyLocation}} 
+
+</body>
+</html>
+
+
+
+{{companyLinkInsta}}
+{{companyLinkTwit}}
+{{companyYoutube}}
+{{companyPinterest}}
+
+{{CompanyLink}}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    Lorem ipsum, dolor sit amet consectetur adipisicing elit. Magnam voluptatibus doloremqu
+    e quam quas ipsum maxime laborum nemo minus ducimus repellat, impedit natus aliquam, cupiditate repudiandae eveniet! Hic, est minima! Ipsa, asperiores. Quo accusantium amet modi et 
+    culpa rem omnis at placeat esse
+     ut dolorem assumenda, dignissimos eos perferends? Explicabo, dignissimos.
+</body>
+</html>
