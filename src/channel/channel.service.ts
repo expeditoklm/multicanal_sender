@@ -3,7 +3,7 @@ import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateChannelDto } from './dto/createChannel.dto';
 import { UpdateChannelDto } from './dto/updateChannel.dto';
-import { AddTemplateToChannelDto } from './dto/addTemplateToChannel.dto';
+import {  AddTemplateTypeToChannelDto } from './dto/addTemplateTypeToChannel.dto';
 
 @Injectable()
 export class ChannelService {
@@ -129,57 +129,33 @@ export class ChannelService {
     }
   }
 
-  // Trouver tous les messages d'un canal spécifique
-  async findMessagesByChannel(channel_id: number) {
-    if (!channel_id) {
-      throw new HttpException('L\'identifiant du canal est requis pour récupérer les messages.', HttpStatus.BAD_REQUEST);
-    }
-
-    try {
-      const messages = await this.prisma.message.findMany({
-        where: {
-          channel_id,
-        },
-      });
-      if (messages.length === 0) {
-        return 'Aucun message trouvé pour ce canal.';
-      }
-      return { message: 'Messages du canal récupérés avec succès', messages };
-    } catch (error) {
-      if (error.message.includes('Cannot connect to database')) {
-        throw new HttpException('Erreur de connexion à la base de données.', HttpStatus.SERVICE_UNAVAILABLE);
-      } else if (error.message.includes('Permission denied')) {
-        throw new HttpException('Vous n\'avez pas la permission de consulter ces messages.', HttpStatus.FORBIDDEN);
-      }
-      throw new HttpException('Erreur lors de la récupération des messages du canal.', HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-  }
 
   // Ajouter un template à un canal
-  async addTemplateToChannel(channel_id: number, addTemplateToChannelDto: AddTemplateToChannelDto) {
-    if (!channel_id || !addTemplateToChannelDto.templateId) {
-      throw new HttpException('L\'identifiant du canal et le templateId sont requis.', HttpStatus.BAD_REQUEST);
+  async addTemplateTypeToChannel(channel_id: number, addTemplateTypeToChannelDto: AddTemplateTypeToChannelDto) {
+    if (!channel_id || !addTemplateTypeToChannelDto.templateTypeId) {
+      throw new HttpException('L\'identifiant du canal et le templateTypeId sont requis.', HttpStatus.BAD_REQUEST);
     }
 
     try {
       const channel = await this.prisma.channel.update({
         where: { id: channel_id },
         data: {
-          templates: {
-            connect: { id: addTemplateToChannelDto.templateId },
+          template_types: {
+            connect: { id: addTemplateTypeToChannelDto.templateTypeId },
           },
         },
       });
-      return { message: 'Template ajouté au canal avec succès', channel };
+      return { message: 'Typpe de Template ajouté au canal avec succès', channel };
     } catch (error) {
       if (error.code === 'P2025') {
-        throw new HttpException('Le canal ou le template spécifié est introuvable.', HttpStatus.NOT_FOUND);
+        throw new HttpException('Le canal ou le type de template spécifié est introuvable.', HttpStatus.NOT_FOUND);
       } else if (error.message.includes('Unique constraint')) {
-        throw new HttpException('Ce template est déjà associé à ce canal.', HttpStatus.CONFLICT);
-      } else if (error.message.includes('Invalid templateId')) {
-        throw new HttpException('Le templateId fourni est invalide.', HttpStatus.BAD_REQUEST);
+        throw new HttpException('Ce type de template est déjà associé à ce canal.', HttpStatus.CONFLICT);
+      } else if (error.message.includes('Invalid templateTypeId')) {
+        throw new HttpException('Le templateTypeId fourni est invalide.', HttpStatus.BAD_REQUEST);
       }
-      throw new HttpException('Erreur lors de l\'ajout du template au canal.', HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException('Erreur lors de l\'ajout du type de template au canal.', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+  
 }

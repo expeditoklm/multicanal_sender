@@ -5,16 +5,22 @@ import { UpdateTemplateTypeDto } from './dto/updateTemplateType.dto';
 
 @Injectable()
 export class TemplateTypeService {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
+
+  // Fonction pour vérifier l'ID de TemplateType
+  private validateId(id: number) {
+    if (isNaN(id) || id <= 0) {
+      throw new BadRequestException('L\'ID du TemplateType doit être un nombre valide supérieur à zéro.');
+    }
+  }
 
   // Créer un nouveau TemplateType
   async create(createTemplateTypeDto: CreateTemplateTypeDto) {
-    // Vérifier que le label est fourni
     if (!createTemplateTypeDto.label) {
       throw new BadRequestException('Le label est requis pour créer un TemplateType.');
     }
 
-    // Vérifier si un TemplateType avec le même label existe déjà
+    // Vérifier l'existence d'un TemplateType avec le même label
     const existingTemplateType = await this.prisma.templateType.findFirst({
       where: { label: createTemplateTypeDto.label },
     });
@@ -28,6 +34,7 @@ export class TemplateTypeService {
         data: createTemplateTypeDto,
       });
     } catch (error) {
+      console.error('Erreur lors de la création:', error);
       throw new BadRequestException('Erreur lors de la création du TemplateType. Veuillez réessayer plus tard.');
     }
   }
@@ -36,40 +43,38 @@ export class TemplateTypeService {
   async findAll() {
     try {
       return await this.prisma.templateType.findMany({
-        include: {
-          templates: true,
-        },
+        include: { templates: true },
       });
     } catch (error) {
+      console.error('Erreur lors de la récupération:', error);
       throw new BadRequestException('Erreur lors de la récupération des TemplateTypes. Veuillez réessayer plus tard.');
     }
   }
 
   // Récupérer un TemplateType par ID
   async findOne(id: number) {
-    if (isNaN(id) || id <= 0) {
-      throw new BadRequestException('L\'ID du TemplateType doit être un nombre valide supérieur à zéro.');
+    this.validateId(id);
+
+    try {
+      const templateType = await this.prisma.templateType.findUnique({
+        where: { id },
+        include: { templates: true },
+      });
+
+      if (!templateType) {
+        throw new NotFoundException(`Aucun TemplateType trouvé avec l'ID ${id}.`);
+      }
+
+      return templateType;
+    } catch (error) {
+      console.error('Erreur lors de la récupération:', error);
+      throw new BadRequestException('Erreur lors de la récupération du TemplateType.');
     }
-
-    const templateType = await this.prisma.templateType.findUnique({
-      where: { id },
-      include: {
-        templates: true,
-      },
-    });
-
-    if (!templateType) {
-      throw new NotFoundException(`Aucun TemplateType trouvé avec l'ID ${id}.`);
-    }
-
-    return templateType;
   }
 
   // Mettre à jour un TemplateType
   async update(id: number, updateTemplateTypeDto: UpdateTemplateTypeDto) {
-    if (isNaN(id) || id <= 0) {
-      throw new BadRequestException('L\'ID du TemplateType doit être un nombre valide supérieur à zéro.');
-    }
+    this.validateId(id);
 
     const templateType = await this.prisma.templateType.findUnique({ where: { id } });
 
@@ -77,7 +82,6 @@ export class TemplateTypeService {
       throw new NotFoundException(`Aucun TemplateType trouvé avec l'ID ${id}.`);
     }
 
-    // Vérifier si le label fourni est valide
     if (updateTemplateTypeDto.label && updateTemplateTypeDto.label.trim() === '') {
       throw new BadRequestException('Le label ne peut pas être une chaîne vide.');
     }
@@ -88,15 +92,14 @@ export class TemplateTypeService {
         data: updateTemplateTypeDto,
       });
     } catch (error) {
-      throw new BadRequestException('Erreur lors de la mise à jour du TemplateType. Veuillez réessayer plus tard.');
+      console.error('Erreur lors de la mise à jour:', error);
+      throw new BadRequestException('Erreur lors de la mise à jour du TemplateType.');
     }
   }
 
   // Supprimer un TemplateType
   async remove(id: number) {
-    if (isNaN(id) || id <= 0) {
-      throw new BadRequestException('L\'ID du TemplateType doit être un nombre valide supérieur à zéro.');
-    }
+    this.validateId(id);
 
     const templateType = await this.prisma.templateType.findUnique({ where: { id } });
 
@@ -107,7 +110,8 @@ export class TemplateTypeService {
     try {
       return await this.prisma.templateType.delete({ where: { id } });
     } catch (error) {
-      throw new BadRequestException('Erreur lors de la suppression du TemplateType. Veuillez réessayer plus tard.');
+      console.error('Erreur lors de la suppression:', error);
+      throw new BadRequestException('Erreur lors de la suppression du TemplateType.');
     }
   }
 }

@@ -7,7 +7,6 @@ export class CreateCompanyDto {
   readonly name: string;
 
   @IsOptional()
-  @IsNotEmpty()
   @IsString()
   readonly description: string;
 

@@ -1,14 +1,17 @@
-import { Controller, Post, Get, Put, Delete, Param, Body } from '@nestjs/common';
+import { Controller, Post, Get, Put, Delete, Param, Body, UseGuards } from '@nestjs/common';
 import { TemplateService } from './template.service';
 import { CreateTemplateDto } from './dto/createTemplate.dto';
 import { UpdateTemplateDto } from './dto/updateTemplate.dto';
 import { ApiTags, ApiOperation, ApiBody, ApiParam, ApiResponse } from '@nestjs/swagger';
+import { AuthGuard } from '@nestjs/passport';
 
 @ApiTags('Templates')  // Catégorie Swagger pour les templates
 @Controller('templates')
 export class TemplateController {
   constructor(private readonly templateService: TemplateService) { }
 
+
+  @UseGuards(AuthGuard('jwt'))
   @Post()
   @ApiOperation({ summary: 'Créer un nouveau modèle' })  // Résumé pour Swagger
   @ApiBody({ description: 'Données pour créer un modèle', type: CreateTemplateDto })  // Corps de la requête attendu
@@ -17,6 +20,8 @@ export class TemplateController {
     return this.templateService.create(createTemplateDto);
   }
 
+
+  @UseGuards(AuthGuard('jwt'))
   @Get()
   @ApiOperation({ summary: 'Obtenir tous les modèles' })  // Décrit l'opération pour obtenir tous les modèles
   @ApiResponse({ status: 200, description: 'Modèles obtenus avec succès.' })  // Réponse attendue
@@ -24,6 +29,8 @@ export class TemplateController {
     return this.templateService.findAll();
   }
 
+
+  @UseGuards(AuthGuard('jwt'))
   @Get(':id')
   @ApiOperation({ summary: 'Obtenir un modèle par son ID' })  // Décrit l'opération pour obtenir un modèle spécifique
   @ApiParam({ name: 'id', description: 'ID du modèle' })  // Paramètre ID
@@ -33,6 +40,8 @@ export class TemplateController {
     return this.templateService.findOne(+id);
   }
 
+
+  @UseGuards(AuthGuard('jwt'))
   @Put(':id')
   @ApiOperation({ summary: 'Mettre à jour un modèle existant' })  // Décrit l'opération de mise à jour
   @ApiParam({ name: 'id', description: 'ID du modèle à mettre à jour' })  // Paramètre ID
@@ -43,6 +52,8 @@ export class TemplateController {
     return this.templateService.update(+id, updateTemplateDto);
   }
 
+
+  @UseGuards(AuthGuard('jwt'))
   @Delete(':id')
   @ApiOperation({ summary: 'Supprimer un modèle' })  // Décrit l'opération de suppression
   @ApiParam({ name: 'id', description: 'ID du modèle à supprimer' })  // Paramètre ID
@@ -52,6 +63,8 @@ export class TemplateController {
     return this.templateService.remove(+id);
   }
 
+
+  @UseGuards(AuthGuard('jwt'))
   @Post('apply')
   @ApiOperation({ summary: 'Appliquer un modèle à une campagne' })  // Décrit l'opération pour appliquer un modèle à une campagne
   @ApiBody({
@@ -73,6 +86,8 @@ export class TemplateController {
     return this.templateService.applyTemplateToCampaign(templateId, campaignId);
   }
 
+
+  @UseGuards(AuthGuard('jwt'))
   @Get('preview/:id')
   @ApiOperation({ summary: 'Prévisualiser un modèle' })  // Décrit l'opération pour prévisualiser un modèle
   @ApiParam({ name: 'id', description: 'ID du modèle à prévisualiser' })  // Paramètre ID

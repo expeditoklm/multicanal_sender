@@ -1,5 +1,5 @@
 // campaign.service.ts
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateCampaignDto } from './dto/createCampaign.dto';
 import { UpdateCampaignDto } from './dto/updateCampaign.dto';
@@ -11,10 +11,23 @@ export class CampaignService {
     constructor(private readonly prisma: PrismaService) { }
 
     // Créer une campagne
-    async create(createCampaignDto: CreateCampaignDto) {
+    async create(createCampaignDto: CreateCampaignDto,userId : number) {
         if (!createCampaignDto.name) {
             throw new HttpException('Le nom de la campagne est requis.', HttpStatus.BAD_REQUEST);
         }
+
+        // Vérification de l'existence de l'utilisateur dans la compagnie
+      const userIsInCompany = await this.prisma.userCompany.findFirst({
+        where: {
+          company_id: createCampaignDto.company_id,
+          user_id: userId,
+        },
+      });
+  
+      if (!userIsInCompany) {
+        throw new BadRequestException('Vous ne pouvez pas créer une campagne pour cette compagnie.');
+      }
+  
 
         try {
             const campaign = await this.prisma.campaign.create({
@@ -137,30 +150,7 @@ export class CampaignService {
         }
     }
 
-    // Trouver toutes les campagnes d'un utilisateur
-    async findCampaignsByUser(userId: number) {
-        if (!userId) {
-            throw new HttpException('L\'identifiant de l\'utilisateur est requis.', HttpStatus.BAD_REQUEST);
-        }
 
-        try {
-            const campaigns = await this.prisma.campaign.findMany({
-                where: { user_id: userId, deleted: false },
-            });
-            if (campaigns.length === 0) {
-                return 'Aucune campagne trouvée pour cet utilisateur.';
-            }
-            return { message: 'Campagnes de l’utilisateur récupérées avec succès', campaigns };
-        } catch (error) {
-            if (error.message.includes('Database connection')) {
-                throw new HttpException('Problème de connexion à la base de données.', HttpStatus.SERVICE_UNAVAILABLE);
-            }
-            if (error.message.includes('Permission denied')) {
-                throw new HttpException('Accès refusé aux campagnes de l’utilisateur.', HttpStatus.FORBIDDEN);
-            }
-            throw new HttpException('Erreur lors de la récupération des campagnes de l’utilisateur.', HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
 
     // Filtrer les campagnes par statut
     async findCampaignsByStatus(status: CampaignStatus) {

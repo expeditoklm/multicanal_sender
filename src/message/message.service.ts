@@ -14,19 +14,12 @@ export class MessageService {
     private readonly emailService: MailerService
   ) { }
 
-  async create(createMessageDto: CreateMessageDto) {
-    const { object, content, status, channel_id, campaign_id, audience_id } = createMessageDto;
+  async create(createMessageDto: CreateMessageDto, userId:number) {
+    const { object, content, status, campaign_id, audience_id } = createMessageDto;
 
-    // Vérifier l'existence du canal
-    if (isNaN(channel_id) || channel_id <= 0) {
-      throw new BadRequestException('L\'ID du canal doit être un nombre valide supérieur à zéro.');
-    }
+ 
 
-    const channelExists = await this.prisma.channel.findUnique({ where: { id: channel_id, deleted: false } });
-    if (!channelExists) {
-      throw new NotFoundException(`Aucun canal trouvé avec l'ID ${channel_id}.`);
-    }
-
+   
     // Vérifier l'existence de la campagne
     if (isNaN(campaign_id) || campaign_id <= 0) {
       throw new BadRequestException('L\'ID de la campagne doit être un nombre valide supérieur à zéro.');
@@ -47,11 +40,28 @@ export class MessageService {
       throw new NotFoundException(`Aucune audience trouvée avec l'ID ${audience_id}.`);
     }
 
+    if (audienceExists.company_id != campaignExists.company_id) {
+      throw new NotFoundException(`Cette campagne ne peut pas être utilisée avec cette audience, car les compagnies ne sont pas identiques.`);
+    }
+    
+// Vérification de l'existence de l'utilisateur dans la compagnie
+    const userIsInCompany = await this.prisma.userCompany.findFirst({
+      where: {
+        company_id: audienceExists.company_id,
+        user_id: userId,
+      },
+    });
+
+    if (!userIsInCompany) {
+      throw new BadRequestException('Vous ne pouvez pas créer un message pour cette compagnie.');
+    }
+
     // Si tous les IDs sont valides et existent, créer le message
     try {
-      return await this.prisma.message.create({
+      const messageCreate = await this.prisma.message.create({
         data: createMessageDto,
       });
+      return { message: 'Message créée avec succès', messageCreate };
     } catch (error) {
       throw new InternalServerErrorException('Une erreur est survenue lors de la création du message. Veuillez réessayer plus tard.');
     }
@@ -152,35 +162,39 @@ export class MessageService {
       throw new BadRequestException("L'ID du message est invalide. Veuillez fournir un ID numérique valide.");
     }
 
+
+    // Récupérer le message
+    const message = await this.prisma.message.findUnique({
+      where: { id: messageId },
+    });
+
+    if (!message) {
+      throw new BadRequestException (`Le message avec l'ID ${messageId} n'existe pas.`);
+    }
+
+    if (message.deleted) {
+      throw new BadRequestException ( `Le message avec l'ID ${messageId} a déjà été supprimé.`);
+    }
+
+    // Récupérer les contacts liés à l'audience du message
+    const contacts = await this.prisma.audienceContact.findMany({
+      where: {
+        audience_id: message.audience_id,
+      },
+    });
+
+    if (!contacts.length) {
+      throw new NotFoundException("Aucun contact trouvé pour l'audience spécifiée.");
+    }
+
     try {
-      // Récupérer le message
-      const message = await this.prisma.message.findUnique({
-        where: { id: messageId },
-      });
-
-      if (!message) {
-        return `Le message avec l'ID ${messageId} n'existe pas.`;
-      }
-
-      if (message.deleted) {
-        return `Le message avec l'ID ${messageId} a déjà été supprimé.`;
-      }
-
-      // Récupérer les contacts liés à l'audience du message
-      const contacts = await this.prisma.audienceContact.findMany({
-        where: {
-          audience_id: message.audience_id,
-        },
-      });
-      console.log("Contacts liés à l'audience récupérés:", contacts);
-
-      if (!contacts.length) {
-        throw new NotFoundException("Aucun contact trouvé pour l'audience spécifiée.");
-      }
+      
 
       const updatedMessage = await this.prisma.message.update({
         where: { id: messageId },
-        data: { status: "SENT" }, // Utilisez "data" pour spécifier les champs à mettre à jour
+        data: { status: "SENT",
+          sent_at: new Date(),
+         }, // Utilisez "data" pour spécifier les champs à mettre à jour
       });
       
 
@@ -198,17 +212,6 @@ export class MessageService {
         try {
           await this.emailService.sendMail(_1contact, message);
 
-          // Créer l'entrée dans `messageContact` pour chaque contact
-          await this.prisma.messageContact.create({
-            data: {
-              message_id: messageId,
-              contact_id: _1contact.id, // Utilisation du `id` du contact
-              hasRecevedMsg: true,
-              interact_date: new Date(),
-              interact_type_id: 1,
-              deleted: false,
-            },
-          });
 
           console.log(`Envoi en file d'attente pour le contact: ${_1contact.email}`);
         } catch (error) {
@@ -217,23 +220,7 @@ export class MessageService {
       });
 
       await Promise.all(sendMailPromises);
-      console.log(`Tous les contacts traités pour le message avec l'ID: ${messageId}`);
 
-      // Mise à jour des contacts échoués
-      if (failedContacts.length > 0) {
-        await Promise.all(failedContacts.map(async (contact) => {
-          await this.prisma.messageContact.updateMany({
-            where: {
-              message_id: messageId,
-              contact_id: contact.contact_id,
-            },
-            data: {
-              hasRecevedMsg: false,
-              updated_at: new Date(),
-            },
-          });
-        }));
-      }
 
       return `Message avec l'ID ${messageId} envoyé avec succès. Contacts échoués : ${failedContacts.length}.`;
 

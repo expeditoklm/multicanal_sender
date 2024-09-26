@@ -1,5 +1,5 @@
 // audience.service.ts
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus, ConflictException, BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateAudienceDto } from './dto/createAudience.dto';
 import { UpdateAudienceDto } from './dto/updateAudience.dto';
@@ -9,25 +9,51 @@ export class AudienceService {
   constructor(private readonly prisma: PrismaService) { }
 
   // Créer une audience
-  async create(createAudienceDto: CreateAudienceDto) {
+  async create(createAudienceDto: CreateAudienceDto, userId: number) {
     try {
-      const audience = await this.prisma.audience.create({
-        data: {
-          ...createAudienceDto,
-          deleted: false,
+      // Vérification de l'existence de l'utilisateur dans la compagnie
+      const userIsInCompany = await this.prisma.userCompany.findFirst({
+        where: {
+          company_id: createAudienceDto.companyId,
+          user_id: userId,
         },
       });
+  
+      if (!userIsInCompany) {
+        throw new BadRequestException('Vous ne pouvez pas créer une audience pour cette compagnie.');
+      }
+  
+      const audience = await this.prisma.audience.create({
+        data: {
+          name: createAudienceDto.name,  // Nom de l'audience
+          description: createAudienceDto.description,  // Nom de l'audience
+          deleted: false,                // Champ "deleted"
+          company: { connect: { id: createAudienceDto.companyId } }, // Liaison avec la compagnie
+        },
+      });
+  
       return { message: 'Audience créée avec succès', audience };
     } catch (error) {
+      // Si l'erreur est une NotFoundException, on la renvoie telle quelle
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+  
+      // Gestion de l'erreur spécifique de contrainte unique
       if (error.code === 'P2002') {
         throw new HttpException('Une audience avec ce nom existe déjà.', HttpStatus.BAD_REQUEST);
       }
+  
+      // Log de l'erreur générale
       throw new HttpException(
         'Erreur lors de la création de l’audience. Veuillez vérifier les informations.',
         HttpStatus.BAD_REQUEST
       );
     }
   }
+  
+  
+  
 
   // Trouver toutes les audiences
   async findAll() {
@@ -193,42 +219,6 @@ export class AudienceService {
   }
 
 
-
-  async associateContactsWithFiles(audienceId: number, contacts: { email: string; name: string; phone?: string; username?: string; source?: string }[]) {
-    try {
-      const audience = await this.prisma.audience.findUnique({ where: { id: audienceId } });
-      if (!audience) {
-        return 'Audience introuvable. Impossible d’associer les contacts.';
-      }
-
-      for (const contact of contacts) {
-        const contactRecord = await this.prisma.contact.upsert({
-          where: { email: contact.email },
-          update: { name: contact.name, phone: contact.phone ?? '' },
-          create: {
-            email: contact.email,
-            name: contact.name,
-            phone: contact.phone ?? '',
-            username: contact.username ?? '',
-            source: contact.source ?? '',
-          },
-        });
-
-        await this.prisma.audienceContact.upsert({
-          where: { audience_id_contact_id: { audience_id: audienceId, contact_id: contactRecord.id } },
-          update: {},
-          create: { audience_id: audienceId, contact_id: contactRecord.id },
-        });
-      }
-
-      return { message: 'Contacts associés à l’audience avec succès' };
-    } catch (error) {
-      throw new HttpException(
-        'Erreur lors de l’association des contacts à l’audience. Veuillez vérifier les données fournies.',
-        HttpStatus.INTERNAL_SERVER_ERROR
-      );
-    }
-  }
 
 
 }

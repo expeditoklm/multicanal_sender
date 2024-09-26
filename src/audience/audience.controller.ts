@@ -1,4 +1,4 @@
-import { Controller, Get, Post,UploadedFile, UseInterceptors, Body, Param, Put, Delete, HttpException, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post,UploadedFile, UseInterceptors, Body, Param, Put, Delete, HttpException, HttpStatus, Req, UseGuards } from '@nestjs/common';
 import { AudienceService } from './audience.service';
 import { CreateAudienceDto } from './dto/createAudience.dto';
 import { UpdateAudienceDto } from './dto/updateAudience.dto';
@@ -10,25 +10,34 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import * as xlsx from 'xlsx';
 import * as csvParser from 'csv-parser';
 import * as fs from 'fs';
+import { AuthGuard } from '@nestjs/passport';
+import { Request } from 'express';
+
 
 @ApiTags('Audience') // Groupe de routes pour Swagger
 @Controller('audiences')
 export class AudienceController {
   constructor(private readonly audienceService: AudienceService) { }
-
+  
+  @UseGuards(AuthGuard('jwt'))
   @Post()
   @ApiOperation({ summary: 'Créer une nouvelle audience' }) // Décrit l'opération
   @ApiBody({ description: 'Données pour créer une audience', type: CreateAudienceDto }) // Décrit le corps de la requête
-  create(@Body() createAudienceDto: CreateAudienceDto) {
-    return this.audienceService.create(createAudienceDto);
+  create(@Body() createAudienceDto: CreateAudienceDto ,@Req() request : Request) {
+    const userId =  request.user['id'];
+    return this.audienceService.create(createAudienceDto,userId);
   }
 
+
+  @UseGuards(AuthGuard('jwt'))
   @Get()
   @ApiOperation({ summary: 'Obtenir toutes les audiences' }) // Décrit l'opération
   findAll() {
     return this.audienceService.findAll();
   }
 
+
+  @UseGuards(AuthGuard('jwt'))
   @Get(':id')
   @ApiOperation({ summary: 'Obtenir une audience par son ID' }) // Décrit l'opération
   @ApiParam({ name: 'id', description: 'L’ID de l’audience', type: String }) // Paramètre audienceId
@@ -36,6 +45,8 @@ export class AudienceController {
     return this.audienceService.findOne(+id);
   }
 
+
+  @UseGuards(AuthGuard('jwt'))
   @Put(':id')
   @ApiOperation({ summary: 'Mettre à jour une audience par son ID' }) // Décrit l'opération
   @ApiParam({ name: 'id', description: 'L’ID de l’audience à mettre à jour', type: String }) // Paramètre id
@@ -44,6 +55,8 @@ export class AudienceController {
     return this.audienceService.update(+id, updateAudienceDto);
   }
 
+
+  @UseGuards(AuthGuard('jwt'))
   @Delete(':id')
   @ApiOperation({ summary: 'Supprimer une audience par son ID' }) // Décrit l'opération
   @ApiParam({ name: 'id', description: 'L’ID de l’audience à supprimer', type: String }) // Paramètre id
@@ -51,6 +64,9 @@ export class AudienceController {
     return this.audienceService.remove(parseInt(id));
   }
 
+
+
+  @UseGuards(AuthGuard('jwt'))
   @Get(':audienceId/messages')
   @ApiOperation({ summary: 'Obtenir tous les messages d’une audience spécifique' }) // Décrit l'opération
   @ApiParam({ name: 'audienceId', description: 'L’ID de l’audience', type: String }) // Paramètre audienceId
@@ -58,6 +74,8 @@ export class AudienceController {
     return this.audienceService.findMessagesByAudience(+audienceId);
   }
 
+
+  @UseGuards(AuthGuard('jwt'))
   @Get(':audienceId/contacts')
   @ApiOperation({ summary: 'Obtenir tous les contacts d’une audience spécifique' }) // Décrit l'opération
   @ApiParam({ name: 'audienceId', description: 'L’ID de l’audience', type: String }) // Paramètre audienceId
@@ -65,6 +83,8 @@ export class AudienceController {
     return this.audienceService.findContactsByAudience(+audienceId);
   }
 
+
+  @UseGuards(AuthGuard('jwt'))
   @Post('add-contact')
   @ApiOperation({ summary: 'Ajouter un contact à une audience' }) // Décrit l'opération
   @ApiBody({ description: 'Données pour ajouter un contact à l’audience', type: AddContactToAudienceDto }) // Décrit le corps de la requête
@@ -72,6 +92,8 @@ export class AudienceController {
     return this.audienceService.addContactToAudience(dto.contactId, dto.audienceId);
   }
 
+
+  @UseGuards(AuthGuard('jwt'))
   @Post(':id/contacts')
   @ApiOperation({ summary: 'Associer un tableau de contacts à une audience' }) // Décrit l'opération
   @ApiParam({ name: 'id', description: 'L’ID de l’audience', type: String }) // Paramètre id
@@ -86,6 +108,8 @@ export class AudienceController {
 
 
 
+
+  @UseGuards(AuthGuard('jwt'))
   @ApiOperation({ summary: 'Upload a file and associate contacts to an audience' }) // Documentation pour la route
   @ApiParam({ name: 'audienceId', type: 'number', description: 'ID of the audience to associate contacts with' }) // Documentation du paramètre `audienceId`
   @ApiConsumes('multipart/form-data') // Indique que la route consomme des fichiers via multipart
@@ -103,6 +127,8 @@ export class AudienceController {
   @ApiResponse({ status: 200, description: 'Contacts successfully associated with the audience' }) // Réponse de succès
   @ApiResponse({ status: 404, description: 'Audience not found' }) // Réponse d'erreur
 
+
+  @UseGuards(AuthGuard('jwt'))
   @Post(':audienceId/upload')
   @UseInterceptors(FileInterceptor('file'))
   async uploadContacts(@Param('audienceId') audienceId: number, @UploadedFile() file: Express.Multer.File) {

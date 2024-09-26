@@ -28,7 +28,6 @@ model User {
     userCompanies UserCompany[]
 
     // Relation with Campaigns
-    campaigns Campaign[]
 
     @@map("users")
 }
@@ -50,12 +49,14 @@ model Company {
     phone           String?
     whatsapp        String?
     location        String?
+    isActive        Boolean  @default(false)
     deleted         Boolean  @default(false)
     created_at      DateTime @default(now())
     updated_at      DateTime @updatedAt
 
     // Relation with UserCompany
     userCompanies UserCompany[]
+    audiances Audience[]
 
     // Relation with Campaigns
     campaigns Campaign[]
@@ -70,7 +71,7 @@ model UserCompany {
     deleted    Boolean  @default(false)
     created_at DateTime @default(now())
     updated_at DateTime @updatedAt
-
+    isMember   Boolean  @default(false)
     // Relations
     user    User    @relation(fields: [user_id], references: [id])
     company Company @relation(fields: [company_id], references: [id])
@@ -91,19 +92,16 @@ model Campaign {
     start_date DateTime?
     end_date   DateTime?
     status     CampaignStatus
-    user_id    Int
     company_id Int
     deleted    Boolean        @default(false)
     created_at DateTime       @default(now())
     updated_at DateTime       @updatedAt
 
     // Relations
-    user    User    @relation(fields: [user_id], references: [id])
     company Company @relation(fields: [company_id], references: [id])
 
     // Relation with Messages
     messages         Message[]
-    templateCampaign TemplateCampaign[]
 
     @@map("campaigns")
 }
@@ -115,11 +113,8 @@ model Channel {
     created_at DateTime @default(now())
     updated_at DateTime @updatedAt
 
-    // Relation with Templates
-    templates Template[]
-
-    // Relation with Messages
-    messages Message[]
+    // Relation with Templates type
+    template_types TemplateType[]
 
     @@map("channels")
 }
@@ -127,15 +122,16 @@ model Channel {
 model Audience {
     id          Int      @id @default(autoincrement())
     name        String
+    company_id  Int 
     description String?
     deleted     Boolean  @default(false)
     created_at  DateTime @default(now())
     updated_at  DateTime @updatedAt
 
     // Relation with AudienceContact
-    audienceContacts AudienceContact[]
+    company    Company    @relation(fields: [company_id], references: [id])
 
-    // Relation with Messages
+    audienceContacts AudienceContact[]
     messages Message[]
 
     @@map("audiences")
@@ -185,9 +181,9 @@ model Message {
     content        String
     scheduled      Boolean   @default(false)
     scheduled_date DateTime? // <-- Supprimer @updatedAt pour gérer manuellement la date de planification
+    sent_at        DateTime?
 
     status      MessageStatus
-    channel_id  Int
     campaign_id Int
     audience_id Int
     deleted     Boolean       @default(false)
@@ -195,13 +191,12 @@ model Message {
     updated_at  DateTime      @updatedAt
 
     // Relations
-    channel  Channel  @relation(fields: [channel_id], references: [id])
     campaign Campaign @relation(fields: [campaign_id], references: [id])
     audience Audience @relation(fields: [audience_id], references: [id])
 
     // Relation with MessageContact
     messageContacts  MessageContact[]
-    templateCampaign TemplateCampaign[]
+    templateMessages TemplateMessage[]
 
     @@map("messages")
 }
@@ -243,26 +238,27 @@ model Template {
     name             String?
     content          String
     template_type_id Int
-    channel_id       Int
     deleted          Boolean  @default(false)
     created_at       DateTime @default(now())
     updated_at       DateTime @updatedAt
 
     // Relations
     templateType TemplateType @relation(fields: [template_type_id], references: [id])
-    channel      Channel      @relation(fields: [channel_id], references: [id])
 
-    templateCampaign TemplateCampaign[]
+    templatMessages TemplateMessage[]
 
     @@map("templates")
 }
 
 model TemplateType {
     id         Int      @id @default(autoincrement())
+    channel_id  Int
     label      String
     deleted    Boolean  @default(false)
     created_at DateTime @default(now())
     updated_at DateTime @updatedAt
+
+    channel  Channel  @relation(fields: [channel_id], references: [id])
 
     // Relation with Template
     templates Template[]
@@ -270,18 +266,17 @@ model TemplateType {
     @@map("template_types")
 }
 
-model TemplateCampaign {
+model TemplateMessage {
     id          Int     @id @default(autoincrement())
-    message_id  Int
+    message_id  Int     @unique
     template_id Int
-    campaign_id Int
     title       String?
     description String?
     link        String?
     btn_txt     String?
     btn_link    String?
     image       String?
-
+    useTemplate Boolean  @default(true)
     deleted    Boolean  @default(false)
     created_at DateTime @default(now())
     updated_at DateTime @updatedAt
@@ -289,7 +284,6 @@ model TemplateCampaign {
     // Relations
     message  Message  @relation(fields: [message_id], references: [id])
     template Template @relation(fields: [template_id], references: [id])
-    campaign Campaign @relation(fields: [campaign_id], references: [id])
 
-    @@map("template_campaigns")
+    @@map("template_messages")
 }

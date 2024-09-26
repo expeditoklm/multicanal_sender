@@ -1,11 +1,12 @@
-import { IsString, IsBoolean, IsOptional } from 'class-validator';
+import { IsString, IsBoolean, IsOptional, IsInt, IsNotEmpty } from 'class-validator';
 
 export class UpdateTemplateTypeDto {
   @IsOptional()
   @IsString()
   label?: string;
 
-  @IsOptional()
-  @IsBoolean()
-  deleted?: boolean;
+
+  @IsInt()
+  @IsNotEmpty()
+  channel_id?: number;
 }

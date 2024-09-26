@@ -1,7 +1,7 @@
 // dto/add-template-to-channel.dto.ts
 import { IsNumber } from 'class-validator';
 
-export class AddTemplateToChannelDto {
+export class AddTemplateTypeToChannelDto {
   @IsNumber()
-  templateId: number;
+  templateTypeId: number;
 }

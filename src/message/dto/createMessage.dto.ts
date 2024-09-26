@@ -15,10 +15,6 @@ export class CreateMessageDto {
   status: MessageStatus;
 
 
-  @IsNotEmpty()
-
-  @IsInt()
-  channel_id: number;
 
 
   @IsNotEmpty()

@@ -10,7 +10,7 @@ configurer le fichier .env
 DATABASE_URL="mysql://root:yourpassword@localhost:3306/nest_db"
 lancer une migration
 npx prisma migrate dev --name create_users_table et npx prisma generate(couper le serveur)
-npx prisma migrate dev --name update_companies_table et npx prisma generate(couper le serveur)
+npx prisma migrate dev --name update_template_campaign_and_message et y(couper le serveur)
 npx prisma migrate dev
 visionner les tables a travers le navigateur
 npx prisma studio
@@ -724,3 +724,240 @@ export class MailerService {
      ut dolorem assumenda, dignissimos eos perferends? Explicabo, dignissimos.
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@Process('send-mail')
+async handleSendMail(job: Job) {
+    const { _1contact, message } = job.data;
+    try {
+        const PersonalizedTemplate = await this.prisma.templateMessage.findFirst({
+            where: { message_id: message.id },
+            include: {
+                template: true,
+            },
+        });
+
+            const company = await this.prisma.company.findFirst({
+                where: { id: message.audience.company_id },
+            });
+
+          // console.log('variable : ', message.audience.company_id);
+
+        
+            // Traitez ici la variable `company` comme nécessaire
+      
+      
+
+        const context = {
+            name: _1contact.name,
+            username: _1contact.username,
+            messageContent: message.content,
+            messageObject: message.object,
+            campaignName: message.campaign.name,
+            campaignStartDate: message.campaign.start_date,
+            campaignEndDate: message.campaign.end_date,
+            templateCampaignTitle: PersonalizedTemplate.title,
+            templateCampaignDesc: PersonalizedTemplate.description,
+            templateCampaignLink: PersonalizedTemplate.link,
+            templateCampaignBtnText: PersonalizedTemplate.btn_txt,
+            templateCampaignBtnLink: PersonalizedTemplate.btn_link,
+            templateCampaignImg: PersonalizedTemplate.image,
+            companyName: company.name,
+            companyDesc: company.description,
+            companyLinkFb: company.link_fb,
+            companyLinkTiktok: company.link_tiktok,
+            companyLinkInsta: company.link_insta,
+            companyLinkTwit: company.link_twit,
+            companyYoutube: company.link_youtube,
+            companyPinterest: company.link_pinterest,
+            CompanyLink: company.link,
+            companySecondColor: company.secondary_color,
+            companyPrimaryColor: company.primary_color,
+            companyTertiaryColor: company.tertiary_color,
+            companyPhone: company.phone,
+            companyWhatsapp: company.whatsapp,
+            companyLocation: company.location,
+          
+        };
+
+        //console.log(context);
+
+        await this.sendEmail(_1contact.email, message.subject, context, PersonalizedTemplate.template.name);
+    } catch (error) {
+        console.error(`Erreur lors de l'envoi de l'email à: ${_1contact.email}`, error);
+    }
+}
+
+
+
+
+
+
+
+
+{
+    "messageId": 1,
+    "scheduledDate": "2024-09-24 07:19:0"
+  
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  async sendMail(_1contact: any, message: any) {
+    let _1messageContact;
+
+    try {
+        // Ajouter le job à la file d'attente pour l'envoi de l'email
+        const job = await this.mailQueue.add('send-mail', { _1contact, message });
+
+        // Créer l'entrée dans `messageContact` pour chaque contact
+        _1messageContact = await this.prisma.messageContact.create({
+            data: {
+                message_id: message.id,
+                contact_id: _1contact.id, // Utilisation du `id` du contact
+                hasRecevedMsg: true,
+                interact_date: new Date(),
+                interact_type_id: 1,
+                deleted: false,
+            },
+        });
+    } catch (error) {
+        console.error(`Erreur lors de l'envoi de l'email à: ${_1contact.email}`, error);
+
+        if (_1messageContact) {
+            // Mettre à jour l'entrée `messageContact` en cas d'erreur
+            await this.prisma.messageContact.update({
+                where: { id: _1messageContact.id },
+                data: {
+                    hasRecevedMsg: false,
+                    updated_at: new Date(),
+                },
+            });
+        } else {
+            // Si `_1messageContact` n'existe pas, créer une entrée pour l'erreur
+            await this.prisma.messageContact.create({
+                data: {
+                    message_id: message.id,
+                    contact_id: _1contact.id,
+                    hasRecevedMsg: false,
+                    interact_date: new Date(),
+                    interact_type_id: 1,
+                    deleted: false,
+                    updated_at: new Date(),
+                },
+            });
+        }
+    }
+}

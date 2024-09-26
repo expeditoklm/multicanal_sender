@@ -7,8 +7,11 @@ export class AudienceContactService {
   constructor(private readonly prisma: PrismaService) { }
 
   // Créer une nouvelle relation audience-contact
-  async create(createAudienceContactDto: CreateAudienceContactDto) {
+  async create(createAudienceContactDto: CreateAudienceContactDto,userId : number) {
     const { audience_id, contact_id } = createAudienceContactDto;
+
+
+    
 
     // Vérifier la validité des IDs
     if (isNaN(audience_id) || audience_id <= 0) {
@@ -29,11 +32,27 @@ export class AudienceContactService {
       throw new NotFoundException(`Aucun contact trouvé avec l'ID ${contact_id}.`);
     }
 
+
+        // Vérification de l'existence de l'utilisateur dans la compagnie
+      const userIsInCompany = await this.prisma.userCompany.findFirst({
+        where: {
+          company_id: audienceExists.company_id,
+          user_id: userId,
+        },
+      });
+  
+      if (!userIsInCompany) {
+        throw new BadRequestException('Vous ne pouvez pas ajouté ce(s) contacts a cette audience.');
+      }
+
+
     // Créer la relation
     try {
-      return await this.prisma.audienceContact.create({
+      const result =  await this.prisma.audienceContact.create({
         data: createAudienceContactDto,
       });
+      return { message: "Utilisateur ajouté a l\ ' audiance avec succès", result };
+
     } catch (error) {
       throw new BadRequestException('Erreur lors de la création de la relation audience-contact. Veuillez réessayer plus tard.');
     }

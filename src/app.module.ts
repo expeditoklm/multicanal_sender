@@ -15,8 +15,8 @@ import { MessageContactModule } from './message-contact/message-contact.module';
 import { AudienceContactModule } from './audience-contact/audience-contact.module';
 import { TemplateTypeModule } from './template-type/template-type.module';
 import { TemplateModule } from './template/template.module';
-import { TemplateCampaignModule } from './template-campaign/template-campaign.module';
 import { BullModule } from '@nestjs/bull';
+import { TemplateMessageModule } from './template-message/template-message.module';
 import Redis from 'ioredis';
 
 const redisProvider = {
@@ -57,7 +57,7 @@ const redisProvider = {
     AudienceContactModule,
     TemplateTypeModule,
     TemplateModule,
-    TemplateCampaignModule,
+    TemplateMessageModule,
   ],
   controllers: [],
   providers: [redisProvider], // Ajoute ici le provider Redis

@@ -17,8 +17,7 @@ export class CreateCampaignDto {
   @IsEnum(CampaignStatus, { message: 'Le statut doit être valide (pending, completed, cancelled).' })
   status: CampaignStatus;
 
-  @IsInt({ message: 'L\'identifiant de l\'utilisateur doit être un entier.' })
-  user_id: number;
+
 
   @IsInt({ message: 'L\'identifiant de l\'entreprise doit être un entier.' })
   company_id: number;

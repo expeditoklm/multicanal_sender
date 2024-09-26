@@ -1,14 +1,17 @@
-import { Controller, Post, Get, Put, Delete, Param, Body } from '@nestjs/common';
+import { Controller, Post, Get, Put, Delete, Param, Body, UseGuards } from '@nestjs/common';
 import { MessageContactService } from './message-contact.service';
 import { CreateMessageContactDto } from './dto/createMessageContact.dto';
 import { UpdateMessageContactDto } from './dto/updateMessageContact.dto';
 import { ApiTags, ApiOperation, ApiBody, ApiParam, ApiResponse } from '@nestjs/swagger';
+import { AuthGuard } from '@nestjs/passport';
 
 @ApiTags('MessageContacts')  // Catégorie Swagger pour les contacts de messages
 @Controller('messageContacts')
 export class MessageContactController {
   constructor(private readonly messageContactService: MessageContactService) { }
 
+
+  @UseGuards(AuthGuard('jwt'))
   @Post()
   @ApiOperation({ summary: 'Créer un nouveau contact de message' })  // Résumé pour Swagger
   @ApiBody({ description: 'Données pour créer un contact de message', type: CreateMessageContactDto })  // Corps de la requête attendu
@@ -17,6 +20,8 @@ export class MessageContactController {
     return this.messageContactService.create(createMessageContactDto);
   }
 
+
+  @UseGuards(AuthGuard('jwt'))
   @Get()
   @ApiOperation({ summary: 'Obtenir tous les contacts de messages' })  // Décrit l'opération pour obtenir tous les contacts
   @ApiResponse({ status: 200, description: 'Contacts de messages obtenus avec succès.' })  // Réponse attendue
@@ -24,6 +29,8 @@ export class MessageContactController {
     return this.messageContactService.findAll();
   }
 
+
+  @UseGuards(AuthGuard('jwt'))
   @Get(':id')
   @ApiOperation({ summary: 'Obtenir un contact de message par son ID' })  // Décrit l'opération pour obtenir un contact spécifique
   @ApiParam({ name: 'id', description: 'ID du contact de message' })  // Paramètre ID
@@ -33,6 +40,8 @@ export class MessageContactController {
     return this.messageContactService.findOne(+id);
   }
 
+
+  @UseGuards(AuthGuard('jwt'))
   @Put(':id')
   @ApiOperation({ summary: 'Mettre à jour un contact de message existant' })  // Décrit l'opération de mise à jour
   @ApiParam({ name: 'id', description: 'ID du contact de message à mettre à jour' })  // Paramètre ID
@@ -43,6 +52,8 @@ export class MessageContactController {
     return this.messageContactService.update(+id, updateMessageContactDto);
   }
 
+
+  @UseGuards(AuthGuard('jwt'))
   @Delete(':id')
   @ApiOperation({ summary: 'Supprimer un contact de message' })  // Décrit l'opération de suppression
   @ApiParam({ name: 'id', description: 'ID du contact de message à supprimer' })  // Paramètre ID
@@ -52,6 +63,8 @@ export class MessageContactController {
     return this.messageContactService.remove(+id);
   }
 
+
+  @UseGuards(AuthGuard('jwt'))
   @Get('contact/:contactId/audiences')
   @ApiOperation({ summary: 'Obtenir les audiences associées à un contact' })  // Décrit l'opération pour obtenir les audiences d'un contact
   @ApiParam({ name: 'contactId', description: 'ID du contact' })  // Paramètre ID
@@ -60,6 +73,8 @@ export class MessageContactController {
     return this.messageContactService.findAudiencesByContact(+contactId);
   }
 
+
+  @UseGuards(AuthGuard('jwt'))
   @Get('audience/:audienceId/contacts')
   @ApiOperation({ summary: 'Obtenir les contacts associés à une audience spécifique' })  // Décrit l'opération pour obtenir les contacts d'une audience
   @ApiParam({ name: 'audienceId', description: 'ID de l\'audience' })  // Paramètre ID

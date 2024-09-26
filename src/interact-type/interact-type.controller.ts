@@ -1,14 +1,16 @@
-import { Controller, Post, Get, Put, Delete, Param, Body } from '@nestjs/common';
+import { Controller, Post, Get, Put, Delete, Param, Body, UseGuards } from '@nestjs/common';
 import { InteractTypeService } from './interact-type.service';
 import { CreateInteractTypeDto } from './dto/createInteractType.dto';
 import { UpdateInteractTypeDto } from './dto/updateInteractType.dto';
 import { ApiTags, ApiOperation, ApiBody, ApiParam, ApiResponse } from '@nestjs/swagger';
+import { AuthGuard } from '@nestjs/passport';
 
 @ApiTags('InteractTypes')  // Catégorie Swagger pour les types d'interactions
 @Controller('interactTypes')
 export class InteractTypeController {
   constructor(private readonly interactTypeService: InteractTypeService) { }
 
+  @UseGuards(AuthGuard('jwt'))
   @Post()
   @ApiOperation({ summary: 'Créer un nouveau type d\'interaction' })  // Résumé pour Swagger
   @ApiBody({ description: 'Données pour créer un type d\'interaction', type: CreateInteractTypeDto })  // Corps de la requête attendu
@@ -16,6 +18,8 @@ export class InteractTypeController {
     return this.interactTypeService.create(createInteractTypeDto);
   }
 
+
+  @UseGuards(AuthGuard('jwt'))
   @Get()
   @ApiOperation({ summary: 'Obtenir tous les types d\'interaction' })  // Décrit l'opération pour obtenir tous les types
   @ApiResponse({ status: 200, description: 'Types d\'interaction obtenus avec succès.' })  // Réponse attendue
@@ -23,6 +27,8 @@ export class InteractTypeController {
     return this.interactTypeService.findAll();
   }
 
+
+  @UseGuards(AuthGuard('jwt'))
   @Get(':id')
   @ApiOperation({ summary: 'Obtenir un type d\'interaction par son ID' })  // Décrit l'opération pour obtenir un type spécifique
   @ApiParam({ name: 'id', description: 'ID du type d\'interaction' })  // Paramètre ID
@@ -32,6 +38,8 @@ export class InteractTypeController {
     return this.interactTypeService.findOne(+id);
   }
 
+
+  @UseGuards(AuthGuard('jwt'))
   @Put(':id')
   @ApiOperation({ summary: 'Mettre à jour un type d\'interaction existant' })  // Décrit l'opération de mise à jour
   @ApiParam({ name: 'id', description: 'ID du type d\'interaction à mettre à jour' })  // Paramètre ID
@@ -42,6 +50,8 @@ export class InteractTypeController {
     return this.interactTypeService.update(+id, updateInteractTypeDto);
   }
 
+
+  @UseGuards(AuthGuard('jwt'))
   @Delete(':id')
   @ApiOperation({ summary: 'Supprimer un type d\'interaction' })  // Décrit l'opération de suppression
   @ApiParam({ name: 'id', description: 'ID du type d\'interaction à supprimer' })  // Paramètre ID

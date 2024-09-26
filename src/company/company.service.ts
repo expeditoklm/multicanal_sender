@@ -2,28 +2,46 @@ import { Injectable, NotFoundException, BadRequestException, ConflictException, 
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateCompanyDto } from './dto/createCompany.dto ';
 import { UpdateCompanyDto } from './dto/updateCompany.dto';
+import { table } from 'console';
+import { AssociateUserToCompaniesDto } from 'src/user-company/dto/associateUserToCompanies.dto';
+import { UserCompanyService } from 'src/user-company/user-company.service';
 
 @Injectable()
 export class CompanyService {
-  constructor(private readonly prismaService: PrismaService) { }
+  constructor(private readonly prismaService: PrismaService,
+    private readonly userCompanyService: UserCompanyService
+  ) { }
 
-  async create(createCompanyDto: CreateCompanyDto) {
+  async create(createCompanyDto: CreateCompanyDto, userId: number) {
     try {
       if (!createCompanyDto.name) {
         throw new BadRequestException('Le nom est requis.');
       }
-
+  
+      // Vérification de l'existence de l'entreprise
       const existingCompany = await this.prismaService.company.findFirst({
         where: { name: createCompanyDto.name },
       });
-
+  
       if (existingCompany) {
         throw new ConflictException('Une entreprise avec ce nom existe déjà.');
       }
-
-      return await this.prismaService.company.create({
+  
+      // Création de la nouvelle entreprise
+      const newCompany = await this.prismaService.company.create({
         data: createCompanyDto,
       });
+  
+      // Association de l'utilisateur à l'entreprise nouvellement créée
+      const associateUserToCompaniesDto: AssociateUserToCompaniesDto = {
+        userId,
+        companyIds: [newCompany.id], // On associe l'utilisateur à l'entreprise nouvellement créée
+      };
+  
+      await this.userCompanyService.associateUserToCompanies(associateUserToCompaniesDto);
+  
+      return newCompany;
+  
     } catch (error) {
       if (error instanceof BadRequestException) {
         throw new BadRequestException('Les données fournies sont incorrectes.');
@@ -34,6 +52,7 @@ export class CompanyService {
       }
     }
   }
+  
 
   async findAll() {
     try {
