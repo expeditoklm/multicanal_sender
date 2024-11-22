@@ -162,7 +162,6 @@ export class MessageService {
       throw new BadRequestException("L'ID du message est invalide. Veuillez fournir un ID numérique valide.");
     }
 
-
     // Récupérer le message
     const message = await this.prisma.message.findUnique({
       where: { id: messageId },
@@ -188,14 +187,23 @@ export class MessageService {
     }
 
     try {
-      
-
-      const updatedMessage = await this.prisma.message.update({
-        where: { id: messageId },
-        data: { status: "SENT",
-          sent_at: new Date(),
-         }, // Utilisez "data" pour spécifier les champs à mettre à jour
+      const templateMessage = await this.prisma.templateMessage.findFirst({
+        where: { message_id: messageId }
       });
+
+      const template = await this.prisma.template.findFirst({
+        where: { id: templateMessage.template_id }
+      });
+
+      const templateType = await this.prisma.templateType.findFirst({
+        where: { id: template.template_type_id }
+      });
+
+      const channel = await this.prisma.channel.findFirst({
+        where: { id: templateType.channel_id }
+      });
+
+    
       
 
       // Tableau pour suivre les contacts échoués
@@ -209,19 +217,19 @@ export class MessageService {
           },
         });
 
+
+       
+
         try {
-          await this.emailService.sendMail(_1contact, message);
-
-
-          console.log(`Envoi en file d'attente pour le contact: ${_1contact.email}`);
+          if(channel.label === "Email") {
+            await this.emailService.sendMail(_1contact, message);
+          }
         } catch (error) {
           failedContacts.push(contact); // Ajouter aux contacts échoués
         }
       });
 
       await Promise.all(sendMailPromises);
-
-
       return `Message avec l'ID ${messageId} envoyé avec succès. Contacts échoués : ${failedContacts.length}.`;
 
     } catch (error) {

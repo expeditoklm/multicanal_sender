@@ -6,7 +6,7 @@ import { ignoreElements } from "rxjs";
 import { PrismaService } from "src/prisma/prisma.service";
 
 type Payload ={
-sub : number
+id : number
 email : string
 }
 

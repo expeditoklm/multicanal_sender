@@ -17,6 +17,7 @@ import { TemplateTypeModule } from './template-type/template-type.module';
 import { TemplateModule } from './template/template.module';
 import { BullModule } from '@nestjs/bull';
 import { TemplateMessageModule } from './template-message/template-message.module';
+import { UserModule } from './user/user.module';
 import Redis from 'ioredis';
 
 const redisProvider = {
@@ -58,6 +59,7 @@ const redisProvider = {
     TemplateTypeModule,
     TemplateModule,
     TemplateMessageModule,
+    UserModule,
   ],
   controllers: [],
   providers: [redisProvider], // Ajoute ici le provider Redis

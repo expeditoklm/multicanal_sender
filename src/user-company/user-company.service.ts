@@ -109,9 +109,9 @@ export class UserCompanyService {
     }
 
     // Vérifier la validité des companyIds
-    if (!Array.isArray(dto.companyIds) || dto.companyIds.length === 0) {
-      throw new BadRequestException('La liste des IDs des entreprises ne peut pas être vide.');
-    }
+    // if (!Array.isArray(dto.companyIds) || dto.companyIds.length === 0) {
+    //   throw new BadRequestException('La liste des IDs des entreprises ne peut pas être vide.');
+    // }
     for (const companyId of dto.companyIds) {
       if (isNaN(companyId) || companyId <= 0) {
         throw new BadRequestException(`L'ID de l'entreprise ${companyId} doit être un nombre valide supérieur à zéro.`);
@@ -133,6 +133,7 @@ export class UserCompanyService {
         user_id: dto.userId,
         company_id: companyId,
         deleted: false,
+        isMember: true,
       }));
 
       return await this.prisma.userCompany.createMany({

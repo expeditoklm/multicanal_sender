@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Offres Spéciales - {{companyName}}</title>
+    <style>
+        :root {
+            --primary-color: #ff6363; /* Couleur dominante principale */
+            --secondary-color: #63a8ff; /* Deuxième couleur */
+            --accent-color: #63ff88; /* Couleur d'accentuation */
+        }
+
+        /* Styles de base */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f5f7fa;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            color: #333333;
+        }
+
+        table {
+            border-spacing: 0;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 5px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        img {
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+
+        a {
+            text-decoration: none;
+            color: #ffffff;
+        }
+
+        h1, h2, h3 {
+            margin: 0;
+        }
+
+        /* En-tête */
+        .header {
+            background-color: var(--primary-color);
+            padding: 40px;
+            text-align: center;
+            color: #ffffff;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+        }
+
+        .header img {
+            max-width: 120px;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 18px;
+            margin-bottom: 0;
+        }
+
+        /* Section de réduction en pourcentage */
+        .discount {
+            padding: 40px 30px;
+            text-align: center;
+            background-color: #fff6e5;
+        }
+
+        .discount h2 {
+            font-size: 24px;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .discount p {
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: #ffffff;
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 50px;
+            text-transform: uppercase;
+            transition: background-color 0.3s ease;
+        }
+
+        .cta-button:hover {
+            background-color: #e55555;
+        }
+
+        /* Section montant fixe */
+        .fixed-amount {
+            padding: 40px 30px;
+            text-align: center;
+            background-color: #e5f8ff;
+        }
+
+        .fixed-amount h2 {
+            font-size: 24px;
+            color: var(--secondary-color);
+            margin-bottom: 10px;
+        }
+
+        .fixed-amount p {
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+
+        /* Section d'offres limitées */
+        .limited-offers {
+            padding: 40px 30px;
+            text-align: center;
+            background-color: #e8ffe5;
+            border-bottom-left-radius: 12px;
+            border-bottom-right-radius: 12px;
+        }
+
+        .limited-offers h2 {
+            font-size: 24px;
+            color: var(--accent-color);
+            margin-bottom: 10px;
+        }
+
+        .limited-offers p {
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+
+        .limited-offers .offer-item {
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            margin: 10px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Pied de page */
+        .footer {
+            padding: 20px;
+            background-color: #333333;
+            color: #ffffff;
+            text-align: center;
+            border-bottom-left-radius: 12px;
+            border-bottom-right-radius: 12px;
+        }
+
+        .footer p {
+            font-size: 12px;
+            color: #cccccc;
+        }
+
+        .footer a {
+            color: #ffffff;
+            text-decoration: underline;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .header, .discount, .fixed-amount, .limited-offers {
+                padding: 20px;
+            }
+
+            .cta-button {
+                padding: 12px 25px;
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <table>
+        <!-- En-tête -->
+        <tr>
+            <td class="header">
+                <img src="{{logoUrl}}" alt="{{companyName}} Logo" />
+                <h1>Offres Spéciales de {{companyName}}</h1>
+                <p>Découvrez nos meilleures réductions pour vous !</p>
+            </td>
+        </tr>
+
+        <!-- Section Réduction en pourcentage -->
+        <tr>
+            <td class="discount">
+                <h2>10% de Réduction sur votre Première Commande</h2>
+                <p>Profitez de 10% de réduction sur votre première commande. Offre limitée, ne la manquez pas !</p>
+                <a href="{{discountLink}}" class="cta-button">Profiter de 10% de réduction</a>
+            </td>
+        </tr>
+
+        <!-- Section Montant fixe de réduction -->
+        <tr>
+            <td class="fixed-amount">
+                <h2>5€ de Réduction sur vos Achats</h2>
+                <p>Obtenez 5€ de réduction sur toute commande supérieure à 50€. N'attendez plus pour en profiter !</p>
+                <a href="{{fixedAmountLink}}" class="cta-button">Obtenir mes 5€</a>
+            </td>
+        </tr>
+
+        <!-- Section Offres Limitées -->
+        <tr>
+            <td class="limited-offers">
+                <h2>Offres Spéciales Limitées</h2>
+                <p>Des offres exclusives sur certains produits pour une durée limitée.</p>
+
+                <!-- Offre 1 -->
+                <div class="offer-item">
+                    <h3>Produit 1 - 20% de Réduction</h3>
+                    <p>Réduction valable uniquement pendant 48 heures. Dépêchez-vous !</p>
+                </div>
+
+                <!-- Offre 2 -->
+                <div class="offer-item">
+                    <h3>Produit 2 - 15% de Réduction</h3>
+                    <p>Offre valable jusqu'à dimanche. Commandez avant qu'il ne soit trop tard.</p>
+                </div>
+
+                <!-- Offre 3 -->
+                <div class="offer-item">
+                    <h3>Produit 3 - 30% de Réduction</h3>
+                    <p>30% de réduction sur ce produit phare, jusqu'à la fin de la semaine.</p>
+                </div>
+
+                <a href="{{limitedOffersLink}}" class="cta-button">Voir les Offres</a>
+            </td>
+        </tr>
+
+        <!-- Pied de page -->
+        <tr>
+            <td class="footer">
+                <p>&copy; 2024 {{companyName}}. Tous droits réservés.</p>
+                <p>Si vous ne souhaitez plus recevoir d'emails de notre part, <a href="{{unsubscribeLink}}">cliquez ici</a>.</p>
+            </td>
+        </tr>
+    </table>
+</body>
+
+</html>

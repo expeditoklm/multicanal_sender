@@ -1,4 +1,4 @@
-import { Body, ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Body, ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { SignUpDto } from './dto/signup.dto';
 
@@ -10,6 +10,7 @@ import { ConfigService } from '@nestjs/config';
 import { ResetPasswordDemandDto } from './dto/resetPasswordDemand.dto';
 import * as speakeasy from 'speakeasy';
 import { ResetPasswordConfirmationDto } from './dto/resetPasswordConfirmation.dto';
+import { ActivateUserInCompanyDto } from './dto/activateUserInCompany.dto';
 
 @Injectable()
 export class AuthService {
@@ -59,13 +60,14 @@ export class AuthService {
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) throw new UnauthorizedException('Invalid credentials');
         const payload = {
-            sub: user.id,
+            id: user.id,
             email: user.email
         }
         const token = this.jwtService.sign(payload, { expiresIn: '2h', secret: this.configService.get('SECRET_KEY') });
         return {
-            tohen: token,
+            token: token,
             user: {
+                name: user.name,
                 userName: user.username,
                 email: user.email,
             },
@@ -111,6 +113,46 @@ export class AuthService {
         return { data: "Password Updated" }
     }
 
+
+    async activateUser(@Body() activateUserInCompanyDto: ActivateUserInCompanyDto,userId : number) {
+
+        const user = await this.prismaService.user.findFirst({ where: { id: activateUserInCompanyDto.user_id } });
+        if (!user) throw new ConflictException('User does not exist');
+
+
+        const company = await this.prismaService.company.findFirst({ where: { id: activateUserInCompanyDto.company_id} });
+        if (!company) throw new ConflictException('Company does not exist');
+
+        const _userCompany = await this.prismaService.userCompany.findFirst({
+             where: { 
+                company_id: activateUserInCompanyDto.company_id,
+                user_id: activateUserInCompanyDto.user_id
+            
+        }});
+
+        if (!_userCompany) throw new BadRequestException('Cette action ne peut etre possible ');
+
+        const userConnectedIsIncompany = await this.prismaService.userCompany.findFirst({ where: {
+             user_id: userId,
+             company_id: activateUserInCompanyDto.company_id,
+             isMember : true
+            } });
+        if (!userConnectedIsIncompany) throw new ConflictException('Cette action ne peut etre possible par vous');
+
+
+        const userActivated = await this.prismaService.userCompany.update({ 
+            where: { id: _userCompany.id},
+        data : { isMember: true} });
+
+        
+       return {
+            user: {
+                userName: user.username,
+                name: user.name,
+            },
+            data: 'User activated  successfully'
+        }
+    }
 
 
 

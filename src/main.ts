@@ -32,6 +32,13 @@ async function bootstrap() {
   app.use(new DateParserMiddleware().use);
   app.use('/images', express.static(path.join(__dirname, '../src/message/templates/images')));
 
+
+  app.enableCors({
+    origin: 'http://localhost:4200',  // Autoriser les requêtes de cette origine
+    methods: 'GET,POST,PUT,DELETE',   // Méthodes HTTP autorisées
+    allowedHeaders: 'Content-Type, Authorization',  // En-têtes autorisés
+    credentials: true  // Si vous avez besoin d'envoyer des cookies
+  });
   // Démarrage de l'application sur le port 3000
   await app.listen(3000);
 }

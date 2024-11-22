@@ -1,10 +1,11 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Put, UseGuards, Req } from '@nestjs/common';
 import { CompanyService } from './company.service';
-import { CreateCompanyDto } from './dto/createCompany.dto ';
-import { UpdateCompanyDto } from './dto/updateCompany.dto';
 import { ApiTags, ApiOperation, ApiParam, ApiBody } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { Request } from 'express';
+import { ActivateCompanyDto } from './dto/activateCompany.dto';
+import { CreateCompanyDto } from './dto/createCompany.dto';
+import { UpdateCompanyDto } from './dto/updateCompany.dto';
 
 
 @ApiTags('Entreprises')  // Catégorie Swagger pour les entreprises
@@ -16,12 +17,12 @@ export class CompanyController {
     @Post()
     @ApiOperation({ summary: 'Créer une nouvelle entreprise' })  // Résumé pour Swagger
     @ApiBody({ description: 'Données pour créer une entreprise', type: CreateCompanyDto })  // Corps de la requête attendu
-    async create(@Body() createCompanyDto: CreateCompanyDto,@Req() request : Request) {
-        const userId =  request.user['id'];
-        return this.companyService.create(createCompanyDto,userId);
+    async create(@Body() createCompanyDto: CreateCompanyDto, @Req() request: Request) {
+        const userId = request.user['id'];
+        return this.companyService.create(createCompanyDto, userId);
     }
 
-    @UseGuards(AuthGuard('jwt'))
+    // @UseGuards(AuthGuard('jwt'))
     @Get()
     @ApiOperation({ summary: 'Obtenir toutes les entreprises' })  // Décrit l'opération d'obtention de toutes les entreprises
     async findAll() {
@@ -51,5 +52,13 @@ export class CompanyController {
     @ApiParam({ name: 'id', description: 'ID de l\'entreprise à supprimer' })  // Paramètre ID
     async remove(@Param('id') id: string) {
         return this.companyService.remove(+id);
+    }
+
+    @UseGuards(AuthGuard('jwt'))
+    @Post()
+    @ApiOperation({ summary: 'Créer une nouvelle entreprise' })  // Résumé pour Swagger
+    @ApiBody({ description: 'Données pour créer une entreprise', type: CreateCompanyDto })  // Corps de la requête attendu
+    async activateCompany(@Body() activateCompanyDto: ActivateCompanyDto) {
+        return this.companyService.activateCompany(activateCompanyDto);
     }
 }

@@ -10,46 +10,6 @@ export class AudienceService {
 
   // Créer une audience
   async create(createAudienceDto: CreateAudienceDto, userId: number) {
-    try {
-      // Vérification de l'existence de l'utilisateur dans la compagnie
-      const userIsInCompany = await this.prisma.userCompany.findFirst({
-        where: {
-          company_id: createAudienceDto.companyId,
-          user_id: userId,
-        },
-      });
-  
-      if (!userIsInCompany) {
-        throw new BadRequestException('Vous ne pouvez pas créer une audience pour cette compagnie.');
-      }
-  
-      const audience = await this.prisma.audience.create({
-        data: {
-          name: createAudienceDto.name,  // Nom de l'audience
-          description: createAudienceDto.description,  // Nom de l'audience
-          deleted: false,                // Champ "deleted"
-          company: { connect: { id: createAudienceDto.companyId } }, // Liaison avec la compagnie
-        },
-      });
-  
-      return { message: 'Audience créée avec succès', audience };
-    } catch (error) {
-      // Si l'erreur est une NotFoundException, on la renvoie telle quelle
-      if (error instanceof BadRequestException) {
-        throw error;
-      }
-  
-      // Gestion de l'erreur spécifique de contrainte unique
-      if (error.code === 'P2002') {
-        throw new HttpException('Une audience avec ce nom existe déjà.', HttpStatus.BAD_REQUEST);
-      }
-  
-      // Log de l'erreur générale
-      throw new HttpException(
-        'Erreur lors de la création de l’audience. Veuillez vérifier les informations.',
-        HttpStatus.BAD_REQUEST
-      );
-    }
   }
   
   

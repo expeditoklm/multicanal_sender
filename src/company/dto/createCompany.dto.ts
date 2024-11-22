@@ -42,6 +42,31 @@ export class CreateCompanyDto {
   @IsString()
   readonly location: string;
 
+
+  @IsOptional()
+  @IsString()
+  readonly link: string;
+
+  @IsOptional()
+  @IsString()
+  readonly link_insta: string;
+
+  @IsOptional()
+  @IsString()
+  readonly link_pinterest: string;
+
+  @IsOptional()
+  @IsString()
+  readonly link_twit: string;
+
+  @IsOptional()
+  @IsString()
+  readonly link_youtube: string;
+
+  @IsOptional()
+  @IsString()
+  readonly isActive: boolean;
+
   @IsOptional()
   @IsBoolean()
   readonly deleted?: boolean;

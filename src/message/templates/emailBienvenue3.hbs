@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bienvenue chez {{companyName}} - Votre partenaire financier moderne</title>
+    <style>
+        /* Style Global */
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7fa;
+            color: #333;
+        }
+
+        .container {
+            max-width: 650px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            animation: fadeIn 1.2s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background-color: {{companyPrimaryColor}};
+            padding: 30px 20px;
+            text-align: center;
+            background-image: radial-gradient(circle, {{companyPrimaryColor}} 10%, {{companySecondaryColor}} 90%);
+        }
+
+        .header img {
+            width: 120px;
+            height: auto;
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .hero {
+            background-color: #f9f9f9;
+            padding: 40px 30px;
+            text-align: center;
+            color: #333;
+        }
+
+        .hero h1 {
+            font-size: 32px;
+            margin: 0;
+            color: {{companyPrimaryColor}};
+        }
+
+        .hero p {
+            font-size: 18px;
+            color: #555;
+            margin-top: 10px;
+        }
+
+        .content {
+            padding: 40px 30px;
+            background-color: #ffffff;
+        }
+
+        .content p {
+            font-size: 16px;
+            color: #666;
+            line-height: 1.8;
+        }
+
+        .content ul {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+        }
+
+        .content li {
+            background-color: #f0f4f8;
+            padding: 12px 20px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            font-size: 16px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .content li span {
+            font-weight: bold;
+        }
+
+        .content a {
+            color: {{companyPrimaryColor}};
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 15px 25px;
+            background-color: {{companyPrimaryColor}};
+            color: #fff;
+            text-align: center;
+            border-radius: 50px;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        .button:hover {
+            background-color: {{companySecondaryColor}};
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            margin: 30px 0;
+        }
+
+        .social-links a {
+            margin: 0 10px;
+            font-size: 24px;
+            color: #888;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .social-links a:hover {
+            color: {{companyPrimaryColor}};
+        }
+
+        .footer {
+            background-color: {{companyTertiaryColor}};
+            padding: 20px;
+            text-align: center;
+            color: #fff;
+            font-size: 14px;
+            border-top: 5px solid {{companyPrimaryColor}};
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            .container {
+                margin: 20px;
+            }
+
+            .header {
+                padding: 20px;
+            }
+
+            .hero h1 {
+                font-size: 28px;
+            }
+
+            .content {
+                padding: 30px 20px;
+            }
+
+            .social-links {
+                flex-direction: column;
+            }
+
+            .social-links a {
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <div class="header">
+            <img src="{{templateCampaignImg}}" alt="{{companyName}} Logo">
+        </div>
+
+        <!-- Hero Section -->
+        <div class="hero">
+            <h1>Bienvenue chez {{companyName}}</h1>
+            <p>Votre partenaire financier de confiance</p>
+            <a href="{{ctaLink}}" class="button">Commencez dès maintenant</a>
+        </div>
+
+        <!-- Content Section -->
+        <div class="content">
+            <p>Nous sommes heureux de vous compter parmi nous. Voici vos informations de connexion :</p>
+            <ul>
+                <li><span>Nom d'utilisateur :</span> {{username}}</li>
+                <li><span>Mot de passe :</span> {{name}}</li>
+            </ul>
+            <p>Pour toute question ou assistance, contactez-nous à <a href="mailto:{{CompanyLink}}">{{CompanyLink}}</a> ou appelez-nous au <a href="tel:{{companyPhone}}">{{companyPhone}}</a>.</p>
+            <p>Suivez-nous également sur nos réseaux sociaux :</p>
+        </div>
+
+        <!-- Social Links Section -->
+        <div class="social-links">
+            <a href="{{companyLinkFb}}" target="_blank"><i class="fa fa-facebook"></i></a>
+            <a href="{{companyLinkTwit}}" target="_blank"><i class="fa fa-twitter"></i></a>
+            <a href="{{companyLinkInsta}}" target="_blank"><i class="fa fa-instagram"></i></a>
+            <a href="{{companyLinkTiktok}}" target="_blank"><i class="fa fa-tiktok"></i></a>
+            <a href="{{companyYoutube}}" target="_blank"><i class="fa fa-youtube"></i></a>
+            <a href="{{companyPinterest}}" target="_blank"><i class="fa fa-pinterest"></i></a>
+        </div>
+
+        <!-- Footer Section -->
+        <div class="footer">
+            &copy; {{year}} {{companyName}}. Tous droits réservés.
+        </div>
+    </div>
+</body>
+
+</html>

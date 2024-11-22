@@ -7,7 +7,7 @@ npm i -D prisma
 Initialiser prisma
 npx prisma init
 configurer le fichier .env
-DATABASE_URL="mysql://root:yourpassword@localhost:3306/nest_db"
+DATABASE_URL="mysql://root:yourpassword@localhost:3306/nest_db" password users : Test@123!
 lancer une migration
 npx prisma migrate dev --name create_users_table et npx prisma generate(couper le serveur)
 npx prisma migrate dev --name update_template_campaign_and_message et y(couper le serveur)
@@ -18,7 +18,7 @@ demarrer le serveur nest
 npm run start:dev
 Generer un module
 nest g mo auth
-Generer un controller
+Generer un controllernest g co auth
 nest g co auth
 Generer un service
 nest g s auth

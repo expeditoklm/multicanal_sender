@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bienvenue chez {{companyName}} - Votre partenaire financier de confiance</title>
+    <style>
+        /* Style général */
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            color: #363232;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: auto;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            background-color: #ffffff;
+        }
+
+        .header {
+            background-color: {{companyPrimaryColor}};
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header img {
+            width: 150px;
+            height: auto;
+        }
+
+        .hero {
+            padding: 40px;
+            background-image: linear-gradient(to bottom, {{companySecondaryColor}}, {{companyTertiaryColor}});
+            text-align: center;
+            color: white;
+            position: relative;
+        }
+
+        .hero h1 {
+            font-size: 32px;
+            margin: 0;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .hero p {
+            font-size: 18px;
+            font-style: italic;
+        }
+
+        .content {
+            padding: 30px;
+            border-top: 5px solid {{companyPrimaryColor}};
+        }
+
+        .content p {
+            font-size: 16px;
+            line-height: 1.5;
+        }
+
+        .content ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .content li {
+            padding: 10px 0;
+            border-bottom: 1px solid #dddddd;
+        }
+
+        .content a {
+            color: {{companyPrimaryColor}};
+            text-decoration: none;
+        }
+
+        .footer {
+            background-color: {{companyTertiaryColor}};
+            padding: 15px;
+            text-align: center;
+            color: white;
+            font-size: 12px;
+        }
+
+        /* Responsive styles */
+        @media (max-width: 600px) {
+            .header, .hero, .content, .footer {
+                padding: 20px;
+            }
+
+            .hero h1 {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <div class="header">
+            <img src="{{templateCampaignImg}}" alt="{{companyName}} Logo" />
+        </div>
+
+        <!-- Hero Section -->
+        <div class="hero" >
+            <h1>Bienvenue chez {{companyName}}</h1>
+            <p>Nous sommes ravis de vous avoir à bord !</p>
+        </div>
+
+        <!-- Content Section -->
+        <div class="content">
+            <p>En tant que client valorisé, vous pouvez attendre un service exceptionnel, des conseils d'experts et des solutions financières innovantes adaptées à vos besoins.</p>
+            <p>Voici vos informations de connexion :</p>
+            <ul>
+                <li><strong>Nom d'utilisateur :</strong> {{username}}</li>
+                <li><strong>Mot de passe :</strong> {{name}}</li>
+            </ul>
+            <p>Si vous avez des questions ou besoin d'assistance, n'hésitez pas à nous contacter à <a href="mailto:{{CompanyLink}}" style="color: {{companyPrimaryColor}};">{{CompanyLink}}</a> ou <a href="tel:{{companyPhone}}" style="color: {{companyPrimaryColor}};">{{companyPhone}}</a>.</p>
+            <p>Vous pouvez également nous suivre sur les réseaux sociaux :</p>
+            <ul>
+                <li><a href="{{companyLinkFb}}" target="_blank" style="color: {{companyPrimaryColor}};">Facebook</a></li>
+                <li><a href="{{companyLinkTwit}}" target="_blank" style="color: {{companyPrimaryColor}};">Twitter</a></li>
+                <li><a href="{{companyLinkInsta}}" target="_blank" style="color: {{companyPrimaryColor}};">Instagram</a></li>
+                <li><a href="{{companyLinkTiktok}}" target="_blank" style="color: {{companyPrimaryColor}};">TikTok</a></li>
+                <li><a href="{{companyYoutube}}" target="_blank" style="color: {{companyPrimaryColor}};">YouTube</a></li>
+                <li><a href="{{companyPinterest}}" target="_blank" style="color: {{companyPrimaryColor}};">Pinterest</a></li>
+            </ul>
+        </div>
+
+        <!-- Footer Section -->
+        <div class="footer">
+            &copy; {{year}} - {{companyName}}. Tous droits réservés.
+        </div>
+    </div>
+</body>
+
+</html>

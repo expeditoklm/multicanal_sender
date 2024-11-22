@@ -1,4 +1,4 @@
-import { Controller, Get, Post,UploadedFile, UseInterceptors, Body, Param, Put, Delete, HttpException, HttpStatus, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, UploadedFile, UseInterceptors, Body, Param, Put, Delete, HttpException, HttpStatus, Req, UseGuards } from '@nestjs/common';
 import { AudienceService } from './audience.service';
 import { CreateAudienceDto } from './dto/createAudience.dto';
 import { UpdateAudienceDto } from './dto/updateAudience.dto';
@@ -18,14 +18,14 @@ import { Request } from 'express';
 @Controller('audiences')
 export class AudienceController {
   constructor(private readonly audienceService: AudienceService) { }
-  
+
   @UseGuards(AuthGuard('jwt'))
   @Post()
   @ApiOperation({ summary: 'Créer une nouvelle audience' }) // Décrit l'opération
   @ApiBody({ description: 'Données pour créer une audience', type: CreateAudienceDto }) // Décrit le corps de la requête
-  create(@Body() createAudienceDto: CreateAudienceDto ,@Req() request : Request) {
-    const userId =  request.user['id'];
-    return this.audienceService.create(createAudienceDto,userId);
+  create(@Body() createAudienceDto: CreateAudienceDto, @Req() request: Request) {
+    const userId = request.user['id'];
+    return this.audienceService.create(createAudienceDto, userId);
   }
 
 
@@ -148,14 +148,14 @@ export class AudienceController {
 
 
 
-async parseFile(file: Express.Multer.File) {
-  const contacts: { email: string; name: string; phone?: string; username?: string; source?: string }[] = [];
+  async parseFile(file: Express.Multer.File) {
+    const contacts: { email: string; name: string; phone?: string; username?: string; source?: string }[] = [];
 
-  if (file.mimetype === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
+    if (file.mimetype === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
       // Gérer le fichier Excel
       const workbook = xlsx.read(file.buffer, { type: 'buffer' });
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
-      
+
       // Lire les données en considérant la première ligne comme entête
       const jsonData: (string | number)[][] = xlsx.utils.sheet_to_json(sheet, { header: 1 });
       const headers: string[] = jsonData[0] as string[]; // Cast de la première ligne en tableau de chaînes
@@ -163,22 +163,22 @@ async parseFile(file: Express.Multer.File) {
 
       // Normaliser les données
       const normalizedData = dataRows.map((row: (string | number)[]) => {
-          return {
-              email: row[headers.indexOf('email')]?.toString().trim(),
-              name: row[headers.indexOf('name')]?.toString().trim(),
-              phone: row[headers.indexOf('phone')]?.toString(),
-              username: row[headers.indexOf('username')]?.toString().trim(),
-              source: row[headers.indexOf('source')]?.toString().trim(),
-          };
+        return {
+          email: row[headers.indexOf('email')]?.toString().trim(),
+          name: row[headers.indexOf('name')]?.toString().trim(),
+          phone: row[headers.indexOf('phone')]?.toString(),
+          username: row[headers.indexOf('username')]?.toString().trim(),
+          source: row[headers.indexOf('source')]?.toString().trim(),
+        };
       });
       contacts.push(...normalizedData);
 
-  }else if (file.mimetype === 'text/csv') {
+    } else if (file.mimetype === 'text/csv') {
       // Gérer le fichier CSV avec un point-virgule comme séparateur
       const csv = file.buffer.toString('utf-8'); // Convertit le fichier en chaîne de caractères
       const rows = csv.split('\n');
       const headers = rows[0].split(';'); // Utilisez le point-virgule comme séparateur
-  
+
       for (let i = 1; i < rows.length; i++) {
         const values = rows[i].split(';'); // Utilisez le point-virgule comme séparateur
         let contact: any = {};
@@ -190,9 +190,9 @@ async parseFile(file: Express.Multer.File) {
     } else {
       throw new Error('Unsupported file format');
     }
-  
+
     return contacts;
-}
+  }
 
 
 

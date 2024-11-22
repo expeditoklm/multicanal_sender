@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Réinitialisation de Mot de Passe - {{companyName}}</title>
+    <style>
+        /* Styles généraux */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f0f4f7;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 30px auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, {{companyPrimaryColor}} 0%, {{companySecondaryColor}} 100%);
+            padding: 40px;
+            text-align: center;
+            color: #ffffff;
+            border-bottom: 5px solid {{companyAccentColor}};
+        }
+
+        .header img {
+            width: 80px;
+            margin-bottom: 20px;
+            border-radius: 50%;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .content {
+            padding: 40px;
+            background-color: #f9f9f9;
+            text-align: center;
+        }
+
+        .content h2 {
+            color: {{companyPrimaryColor}};
+            font-size: 22px;
+            margin-bottom: 15px;
+        }
+
+        .content p {
+            font-size: 16px;
+            line-height: 1.8;
+            color: #555555;
+            margin-bottom: 30px;
+        }
+
+        .button {
+            display: inline-block;
+            background-color: {{companyPrimaryColor}};
+            color: #ffffff;
+            text-decoration: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        .button:hover {
+            background-color: {{companyAccentColor}};
+        }
+
+        .note {
+            font-size: 14px;
+            color: #777;
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .divider {
+            border-top: 2px solid #eeeeee;
+            margin: 30px 0;
+        }
+
+        .footer {
+            padding: 30px;
+            text-align: center;
+            background-color: #333333;
+            color: #ffffff;
+        }
+
+        .footer p {
+            font-size: 12px;
+            color: #bbbbbb;
+            margin: 0;
+        }
+
+        .footer a {
+            color: #ffffff;
+            text-decoration: underline;
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 600px) {
+            .content {
+                padding: 20px;
+            }
+
+            .header {
+                padding: 30px;
+            }
+
+            .button {
+                padding: 12px 20px;
+                font-size: 16px;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- En-tête -->
+        <div class="header">
+            <img src="{{companyLogoUrl}}" alt="{{companyName}} Logo">
+            <h1>Réinitialisation de votre mot de passe</h1>
+        </div>
+
+        <!-- Contenu principal -->
+        <div class="content">
+            <h2>Bonjour {{username}},</h2>
+            <p>
+                Nous avons reçu une demande de réinitialisation de votre mot de passe. Si vous avez fait cette demande, veuillez cliquer sur le bouton ci-dessous pour définir un nouveau mot de passe :
+            </p>
+
+            <a href="{{resetLink}}" class="button">Réinitialiser mon mot de passe</a>
+
+            <p class="note">
+                Si vous n'avez pas demandé de réinitialisation de mot de passe, veuillez ignorer cet e-mail ou contacter notre support immédiatement.
+            </p>
+
+            <div class="divider"></div>
+
+            <p class="note">
+                Pour votre sécurité, ce lien de réinitialisation expirera dans 24 heures.
+            </p>
+        </div>
+
+        <!-- Pied de page -->
+        <div class="footer">
+            <p>&copy; {{year}} {{companyName}}. Tous droits réservés.</p>
+            <p>
+                Besoin d'aide ? Contactez-nous à <a href="mailto:{{supportEmail}}">{{supportEmail}}</a> ou visitez notre <a href="{{CompanyLink}}" target="_blank">site web</a>.
+            </p>
+        </div>
+    </div>
+</body>
+
+</html>

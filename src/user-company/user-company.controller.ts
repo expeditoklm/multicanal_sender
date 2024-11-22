@@ -32,7 +32,7 @@ export class UserCompanyController {
     return this.userCompanyService.removeUserFromCompany(dto);
   }
 
-  @UseGuards(AuthGuard('jwt'))
+  // @UseGuards(AuthGuard('jwt'))
   @Get('company/:userId')
   @ApiOperation({ summary: 'Obtenir l’entreprise d’un utilisateur par ID' })
   @ApiParam({ name: 'userId', description: 'ID de l’utilisateur' })
@@ -42,7 +42,7 @@ export class UserCompanyController {
     return this.userCompanyService.getCompanyByUser({ userId });
   }
 
-  @UseGuards(AuthGuard('jwt'))
+  // @UseGuards(AuthGuard('jwt'))
   @Post('associate')
   @ApiOperation({ summary: 'Associer un utilisateur à des entreprises' })
   @ApiBody({ description: 'Données pour associer un utilisateur à des entreprises', type: AssociateUserToCompaniesDto })

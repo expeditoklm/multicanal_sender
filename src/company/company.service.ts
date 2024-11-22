@@ -1,10 +1,11 @@
-import { Injectable, NotFoundException, BadRequestException, ConflictException, InternalServerErrorException, UnauthorizedException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ConflictException, InternalServerErrorException, UnauthorizedException, ForbiddenException, Body } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateCompanyDto } from './dto/createCompany.dto ';
+import { CreateCompanyDto } from './dto/createCompany.dto';
 import { UpdateCompanyDto } from './dto/updateCompany.dto';
 import { table } from 'console';
 import { AssociateUserToCompaniesDto } from 'src/user-company/dto/associateUserToCompanies.dto';
 import { UserCompanyService } from 'src/user-company/user-company.service';
+import { ActivateCompanyDto } from './dto/activateCompany.dto';
 
 @Injectable()
 export class CompanyService {
@@ -17,31 +18,31 @@ export class CompanyService {
       if (!createCompanyDto.name) {
         throw new BadRequestException('Le nom est requis.');
       }
-  
+
       // Vérification de l'existence de l'entreprise
       const existingCompany = await this.prismaService.company.findFirst({
         where: { name: createCompanyDto.name },
       });
-  
+
       if (existingCompany) {
         throw new ConflictException('Une entreprise avec ce nom existe déjà.');
       }
-  
+
       // Création de la nouvelle entreprise
       const newCompany = await this.prismaService.company.create({
         data: createCompanyDto,
       });
-  
+
       // Association de l'utilisateur à l'entreprise nouvellement créée
       const associateUserToCompaniesDto: AssociateUserToCompaniesDto = {
         userId,
         companyIds: [newCompany.id], // On associe l'utilisateur à l'entreprise nouvellement créée
       };
-  
+
       await this.userCompanyService.associateUserToCompanies(associateUserToCompaniesDto);
-  
+
       return newCompany;
-  
+
     } catch (error) {
       if (error instanceof BadRequestException) {
         throw new BadRequestException('Les données fournies sont incorrectes.');
@@ -52,7 +53,7 @@ export class CompanyService {
       }
     }
   }
-  
+
 
   async findAll() {
     try {
@@ -166,6 +167,29 @@ export class CompanyService {
       } else {
         throw new InternalServerErrorException('Une erreur interne est survenue lors de la suppression de l\'entreprise.');
       }
+    }
+  }
+
+
+
+  async activateCompany(@Body() activateCompanyDto: ActivateCompanyDto) {
+
+    const company = await this.prismaService.company.findFirst({ where: { id: activateCompanyDto.company_id } });
+    if (!company) throw new ConflictException('Company does not exist');
+
+
+
+
+
+    const companyActivated = await this.prismaService.company.update({
+      where: { id: company.id },
+      data: { isActive: true }
+    });
+
+
+    return {
+      company: companyActivated,
+      data: 'User activated  successfully'
     }
   }
 }

@@ -6,6 +6,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as handlebars from 'handlebars';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { ConfigService } from '@nestjs/config';
 
 @Processor('mailQueue')
 @Injectable()
@@ -15,6 +16,7 @@ export class MailerService {
     constructor(
         @InjectQueue('mailQueue') private readonly mailQueue: Queue,
         private readonly prisma: PrismaService,
+        private readonly configService: ConfigService
     ) {
         this.initializeTransporter();
     }
@@ -40,7 +42,6 @@ export class MailerService {
         return template(context);
     }
 
-    
     // Fonction pour envoyer un email avec ou sans template
     private async sendEmail(to: string, subject: string, context: any, template?: string) {
         let mailContent;
@@ -101,7 +102,6 @@ export class MailerService {
     }
 
 
-
     async sendSignupConfirmation(email: string) {
         await this.sendEmail(email, 'INSCRIPTION', {}, 'signup_confirmation');
     }
@@ -154,6 +154,8 @@ export class MailerService {
                 where: { id: completeMessage.campaign.company_id },
             });
 
+            const year = new Date().getFullYear();
+            const baseUrl = this.configService.get<string>('BASE_URL');
             // Vérification des valeurs optionnelles pour éviter des erreurs nulles
             const context = {
                 name: _1contact.name,
@@ -163,13 +165,13 @@ export class MailerService {
                 campaignName: completeMessage.campaign.name,
                 campaignStartDate: completeMessage.campaign.start_date,
                 campaignEndDate: completeMessage.campaign.end_date,
-                templateCampaignTitle: PersonalizedTemplate?.title || '',
-                templateCampaignDesc: PersonalizedTemplate?.description || '',
-                templateCampaignLink: PersonalizedTemplate?.link || '',
-                templateCampaignBtnText: PersonalizedTemplate?.btn_txt || '',
-                templateCampaignBtnLink: PersonalizedTemplate?.btn_link || '',
-                templateCampaignImg: PersonalizedTemplate?.image || '',
-                companyName: company?.name || 'Nom non défini',
+                templateCampaignTitle: PersonalizedTemplate?.title || '<<Non défini>>',
+                templateCampaignDesc: PersonalizedTemplate?.description || '<<Non défini>>',
+                templateCampaignLink: PersonalizedTemplate?.link || '<<Non défini>>',
+                templateCampaignBtnText: PersonalizedTemplate?.btn_txt || '<<Non défini>>',
+                templateCampaignBtnLink: PersonalizedTemplate?.btn_link || '<<Non défini>>',
+                templateCampaignImg: PersonalizedTemplate?.image || '<<Non défini>>',
+                companyName: company?.name || '<<Non défini>>',
                 companyDesc: company?.description || 'Description non définie',
                 companyLinkFb: company?.link_fb || '',
                 companyLinkTiktok: company?.link_tiktok || '',
@@ -178,12 +180,14 @@ export class MailerService {
                 companyYoutube: company?.link_youtube || '',
                 companyPinterest: company?.link_pinterest || '',
                 CompanyLink: company?.link || '',
-                companySecondColor: company?.secondary_color || '',
+                companySecondaryColor: company?.secondary_color || '',
                 companyPrimaryColor: company?.primary_color || '',
                 companyTertiaryColor: company?.tertiary_color || '',
                 companyPhone: company?.phone || '',
                 companyWhatsapp: company?.whatsapp || '',
                 companyLocation: company?.location || '',
+                year : year,
+                baseUrl : baseUrl,
             };
 
             // Créer l'entrée dans `messageContact` pour chaque contact

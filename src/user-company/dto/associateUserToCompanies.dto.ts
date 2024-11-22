@@ -5,7 +5,7 @@ export class AssociateUserToCompaniesDto {
   userId: number;
 
   @IsArray()
-  @ArrayNotEmpty()
+  // @ArrayNotEmpty()
   @IsInt({ each: true })
   companyIds: number[];
 }
