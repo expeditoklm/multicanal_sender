@@ -22,10 +22,11 @@ export class CompanyController {
         return this.companyService.create(createCompanyDto, userId);
     }
 
-    // @UseGuards(AuthGuard('jwt'))
+    @UseGuards(AuthGuard('jwt'))
     @Get()
     @ApiOperation({ summary: 'Obtenir toutes les entreprises' })  // Décrit l'opération d'obtention de toutes les entreprises
-    async findAll() {
+    async findAll(@Req() request: Request) {
+        console.log('request  from angular front:', request.user); 
         return this.companyService.findAll();
     }
 

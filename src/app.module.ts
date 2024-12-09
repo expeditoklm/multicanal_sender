@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ConfigModule } from '@nestjs/config';
@@ -19,6 +19,7 @@ import { BullModule } from '@nestjs/bull';
 import { TemplateMessageModule } from './template-message/template-message.module';
 import { UserModule } from './user/user.module';
 import Redis from 'ioredis';
+import { LoggerMiddleware } from './auth/logger.middleware';
 
 const redisProvider = {
   provide: 'REDIS_CLIENT',
@@ -62,6 +63,11 @@ const redisProvider = {
     UserModule,
   ],
   controllers: [],
-  providers: [redisProvider], // Ajoute ici le provider Redis
+  providers: [redisProvider], // Ajoute ici le provider 
+  
 })
-export class AppModule {}
+export class AppModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LoggerMiddleware).forRoutes('*');
+  }
+}
