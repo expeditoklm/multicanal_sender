@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Post, Body, Patch, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Post, Body, Patch, Req, UseGuards, Put, Delete } from '@nestjs/common';
 import { CampaignService } from './campaign.service';
 import { CreateCampaignDto } from './dto/createCampaign.dto';
 import { UpdateCampaignDto } from './dto/updateCampaign.dto';
@@ -18,6 +18,7 @@ export class CampaignController {
     @ApiOperation({ summary: 'Créer une nouvelle campagne' }) // Décrit l’opération de création
     @ApiBody({ description: 'Données pour créer une campagne', type: CreateCampaignDto }) // Décrit le corps de la requête pour créer une campagne
     create(@Body() createCampaignDto: CreateCampaignDto,@Req() request : Request) {
+        console.log('Données reçues après transformation :', createCampaignDto);
         const userId =  request.user['id'];
         return this.campaignService.create(createCampaignDto,userId);
     }
@@ -40,7 +41,7 @@ export class CampaignController {
 
 
     @UseGuards(AuthGuard('jwt'))
-    @Patch(':id')
+    @Put(':id')
     @ApiOperation({ summary: 'Mettre à jour une campagne existante' }) // Décrit l’opération de mise à jour
     @ApiParam({ name: 'id', description: 'ID de la campagne à mettre à jour' }) // Paramètre ID
     @ApiBody({ description: 'Données pour mettre à jour la campagne', type: UpdateCampaignDto }) // Corps de la requête pour la mise à jour
@@ -72,7 +73,7 @@ export class CampaignController {
 
 
     @UseGuards(AuthGuard('jwt'))
-    @Patch('/cancel/:id')
+    @Delete('/cancel/:id')
     @ApiOperation({ summary: 'Annuler une campagne' }) // Décrit l’opération d’annulation
     @ApiParam({ name: 'id', description: 'ID de la campagne à annuler' }) // Paramètre ID
     cancelCampaign(@Param('id') id: number) {

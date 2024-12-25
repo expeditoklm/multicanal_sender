@@ -51,12 +51,37 @@ export class CampaignService {
         }
     }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
     // Trouver toutes les campagnes
     async findAll() {
         try {
             const campaigns = await this.prisma.campaign.findMany({
-                where: { deleted: false },
-            });
+                where: {
+                  deleted: false,
+                  company: {
+                    deleted: false, // Filters campaigns whose related company has `deleted` set to true
+                  },
+                },
+              });
+              
             if (campaigns.length === 0) {
                 return { message: 'Aucune campagne active trouvée.' };
 

@@ -65,7 +65,7 @@ export class CreateCompanyDto {
 
   @IsOptional()
   @IsString()
-  readonly isActive: boolean;
+  readonly isActive?: boolean;
 
   @IsOptional()
   @IsBoolean()

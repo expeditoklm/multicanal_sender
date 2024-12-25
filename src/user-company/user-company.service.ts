@@ -1,14 +1,36 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, ConflictException, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { FindUsersByCompanyDto } from './dto/findUsersByCompany.dto';
 import { RemoveUserFromCompanyDto } from './dto/removeUserFromCompany.dto';
 import { GetCompanyByUserDto } from './dto/getCompanyByUser.dto';
 import { UpdateUserCompanyDto } from './dto/updateUserCompany.dto';
 import { AssociateUserToCompaniesDto } from './dto/associateUserToCompanies.dto';
+import { AssociateUserToCompanyDto } from './dto/AssociateUserToCompanyDto.dto';
 
 @Injectable()
 export class UserCompanyService {
   constructor(private prisma: PrismaService) { }
+
+
+  
+    async create(createUserCompanyDto: AssociateUserToCompanyDto, userId: number) {
+      try {
+  
+        return this.prisma.userCompany.create({
+          data: {
+            company_id: createUserCompanyDto.companyId,
+            user_id: userId,
+            isMember: true // Utilisation de l'ID utilisateur passé en paramètre
+          },
+        });
+      } catch (error) {
+        if (error instanceof ConflictException) {
+          throw error; // Propager les exceptions spécifiques si nécessaire
+        }
+        // Gérer d'autres types d'erreurs ici si nécessaire
+        throw new InternalServerErrorException('Erreur interne du serveur.');
+      }
+    }
 
   async findUsersByCompany(dto: FindUsersByCompanyDto) {
     // Vérifier la validité de companyId

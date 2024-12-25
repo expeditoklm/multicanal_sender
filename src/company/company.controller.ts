@@ -48,7 +48,7 @@ export class CompanyController {
     }
 
     @UseGuards(AuthGuard('jwt'))
-    @Patch(':id')
+    @Delete(':id')
     @ApiOperation({ summary: 'Supprimer une entreprise' })  // Décrit l'opération de suppression
     @ApiParam({ name: 'id', description: 'ID de l\'entreprise à supprimer' })  // Paramètre ID
     async remove(@Param('id') id: string) {

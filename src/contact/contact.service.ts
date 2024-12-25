@@ -72,9 +72,35 @@ export class ContactService {
     }
   }
 
+  async getAudiencesByContact(contactId: number) {
+    console.log(contactId);
+    const audiences = await this.prisma.audience.findMany({
+      where: {
+        audienceContacts: {
+          some: {
+            contact_id: contactId,
+          },
+        },
+      },
+      include: {
+        company: true, // Récupère les détails de la société associée
+      },
+    });
+
+    // Transforme les données en DTO
+    return audiences.map(audience => ({
+      id: audience.id,
+      name: audience.name,
+      description: audience.description,
+      companyName: audience.company?.name,
+    }));
+  }
+
   // Mettre à jour un contact
   async update(id: number, updateContactDto: UpdateContactDto) {
     try {
+      // console.log("id",id)
+      // console.log("updateContactDto",updateContactDto)
       const contact = await this.prisma.contact.findUnique({
         where: { id },
       });

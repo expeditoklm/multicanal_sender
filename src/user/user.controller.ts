@@ -37,7 +37,7 @@ export class UserController {
     return this.userService.create(createUserDto);
   }
 
-  //@UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'))
   @Get()
   @ApiOperation({ summary: 'Get all users' })
   @ApiResponse({ status: 200, description: 'Return all users.' })
@@ -45,7 +45,7 @@ export class UserController {
     return this.userService.findAll();
   }
 
-  //@UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'))
   @Get(':id')
   @ApiOperation({ summary: 'Get a user by id' })
   @ApiParam({ name: 'id', description: 'User ID' })
@@ -54,7 +54,7 @@ export class UserController {
     return this.userService.findOne(+id);
   }
 
-  //@UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'))
   @Put(':id')
   @ApiOperation({ summary: 'Update a user' })
   @ApiParam({ name: 'id', description: 'User ID' })
@@ -64,7 +64,7 @@ export class UserController {
     return this.userService.update(+id, updateUserDto);
   }
 
-  //@UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'))
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a user' })
   @ApiParam({ name: 'id', description: 'User ID' })
@@ -73,7 +73,7 @@ export class UserController {
     return this.userService.remove(+id);
   }
 
-  //@UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'))
   @Post('company')
   @ApiOperation({ summary: 'Associate user with company' })
   @ApiBody({ type: CreateUserCompanyDto })
@@ -85,7 +85,7 @@ export class UserController {
     return this.userService.createUserCompany(createUserCompanyDto);
   }
 
-  //@UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'))
   @Put('company/:userId/:companyId')
   @ApiOperation({ summary: 'Update user-company association' })
   @ApiParam({ name: 'userId', description: 'User ID' })

@@ -38,6 +38,14 @@ export class ContactController {
 
 
   @UseGuards(AuthGuard('jwt'))
+  @Get(':contactId/audiences')
+  @ApiOperation({ summary: 'demander les audiences associées à un contact.' })  // Décrit l'opération pour obtenir un contact spécifique
+  @ApiParam({ name: 'contactId', description: 'ID du contact' })  // Paramètre ID
+  async getAudiencesByContact(@Param('contactId') contactId: string) {
+    return this.contactService.getAudiencesByContact(+contactId);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
   @Put(':id')
   @ApiOperation({ summary: 'Mettre à jour un contact existant' })  // Décrit l'opération de mise à jour
   @ApiParam({ name: 'id', description: 'ID du contact à mettre à jour' })  // Paramètre ID
