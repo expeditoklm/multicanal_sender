@@ -126,6 +126,7 @@ export class MailerService {
     async handleSendMail(job: Job) {
         const { _1contact, message } = job.data;
         let _1messageContact;
+        console.log("je suis dans le process",_1contact.id)
 
         try {
             // Récupérer le message avec la campagne associée
@@ -227,13 +228,10 @@ export class MailerService {
                 }
             });
 
-
             // supprimer le contact si lenvoie est reuissi et si non associé a d'autre audience
             await this.prisma.contact.delete({
                 where: { id: _1contact.id },
             });
-
-
 
         } catch (error) {
             console.error(`Erreur lors de l'envoi de l'email à: ${_1contact.email}`, error);

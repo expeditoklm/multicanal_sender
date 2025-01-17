@@ -7,6 +7,7 @@ import {
   Param,
   Body,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 
@@ -37,13 +38,21 @@ export class UserController {
     return this.userService.create(createUserDto);
   }
 
-  @UseGuards(AuthGuard('jwt'))
-  @Get()
-  @ApiOperation({ summary: 'Get all users' })
-  @ApiResponse({ status: 200, description: 'Return all users.' })
-  async findAll() {
-    return this.userService.findAll();
-  }
+@UseGuards(AuthGuard('jwt'))
+@Get()
+@ApiOperation({ summary: 'Get all users' })
+@ApiResponse({ status: 200, description: 'Return paginated list of users.' })
+async findAll(
+  @Query('page') page: number = 1,
+  @Query('pageSize') pageSize: number = 10,
+  @Query('searchName') searchName?: string,
+  @Query('searchUserName') searchUserName?: string,
+  @Query('searchEmail') searchEmail?: string,
+  @Query('searchRole') searchRole?: string,
+) {
+  return this.userService.findAll(page, pageSize, { searchName, searchUserName, searchEmail, searchRole });
+}
+
 
   @UseGuards(AuthGuard('jwt'))
   @Get(':id')

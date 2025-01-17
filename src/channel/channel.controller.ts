@@ -49,7 +49,7 @@ export class ChannelController {
 
 
     @UseGuards(AuthGuard('jwt'))
-    @Patch(':id')
+    @Delete(':id')
     @ApiOperation({ summary: 'Supprimer un canal' })  // Décrit l'opération de suppression d'un canal
     @ApiParam({ name: 'id', description: 'ID du canal à supprimer' })  // Paramètre ID
     remove(@Param('id') id: string) {

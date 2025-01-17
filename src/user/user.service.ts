@@ -48,21 +48,56 @@ export class UserService {
     }
   }
 
-  async findAll() {
-    return this.prisma.user.findMany({
-      where: { deleted: false },
-      select: {
-        id: true,
-        name: true,
-        username: true,
-        email: true,
-        role: true,
-        created_at: true,
-        updated_at: true,
-        userCompanies: true,
-      },
-    });
+  async findAll(page: number, pageSize: number, filters: any) {
+    console.log('Page demandée :', page, 'Taille de page :', pageSize, 'Filtres :', filters);
+
+    const skip = (page - 1) * pageSize;
+    const where: any = { deleted: false };
+  
+    if (filters.searchName) {
+      where.name = { contains: filters.searchName,  };
+    }
+    if (filters.searchUserName) {
+      where.username = { contains: filters.searchUserName,  };
+    }
+    if (filters.searchEmail) {
+      where.email = { contains: filters.searchEmail,  };
+    }
+    if (filters.searchRole) {
+      where.role = filters.searchRole;
+    }
+  
+    const [users, total] = await this.prisma.$transaction([
+      this.prisma.user.findMany({
+        where,
+        select: {
+          id: true,
+          name: true,
+          username: true,
+          email: true,
+          role: true,
+          created_at: true,
+          updated_at: true,
+          userCompanies: true,
+        },
+        skip,
+        take: pageSize,
+      }),
+      this.prisma.user.count({ where }),
+    ]);
+  console.log("users",users);
+  console.log("total",total);
+  console.log("page",page);
+  console.log("pageSize",pageSize);
+    return {
+      data: users,
+      total,
+      page,
+      pageSize,
+    };
   }
+  
+  
 
   async findOne(id: number) {
     if (isNaN(id) || id <= 0) {

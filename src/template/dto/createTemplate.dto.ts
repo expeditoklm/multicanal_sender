@@ -11,9 +11,6 @@ export class CreateTemplateDto {
   @IsInt()
   template_type_id: number;
 
-  @IsInt()
-  channel_id: number;
-
   @IsOptional()
   @IsBoolean()
   deleted?: boolean;

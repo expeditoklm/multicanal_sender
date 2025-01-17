@@ -10,7 +10,7 @@ export class TemplateService {
   // Créer un nouveau Template
   async create(createTemplateDto: CreateTemplateDto) {
     // Vérification des champs obligatoires
-    const { content, template_type_id, channel_id } = createTemplateDto;
+    const { content, template_type_id } = createTemplateDto;
 
     if (!content) {
       throw new BadRequestException('Le champ "contenu" est requis pour créer un modèle.');
@@ -18,16 +18,11 @@ export class TemplateService {
     if (!template_type_id) {
       throw new BadRequestException('L\'ID du type de modèle est requis pour créer un modèle.');
     }
-    if (!channel_id) {
-      throw new BadRequestException('L\'ID du canal est requis pour créer un modèle.');
-    }
+ 
 
     // Validation des IDs
     if (isNaN(template_type_id) || template_type_id <= 0) {
       throw new BadRequestException('L\'ID du type de modèle doit être un nombre valide supérieur à zéro.');
-    }
-    if (isNaN(channel_id) || channel_id <= 0) {
-      throw new BadRequestException('L\'ID du canal doit être un nombre valide supérieur à zéro.');
     }
 
     // Vérifier l'existence du type de modèle
@@ -38,15 +33,7 @@ export class TemplateService {
     if (!templateTypeExists) {
       throw new NotFoundException(`Le type de modèle avec l'ID ${template_type_id} n'existe pas.`);
     }
-
-    // Vérifier l'existence du canal
-    const channelExists = await this.prisma.channel.findUnique({
-      where: { id: channel_id },
-    });
-
-    if (!channelExists) {
-      throw new NotFoundException(`Le canal avec l'ID ${channel_id} n'existe pas.`);
-    }
+    
 
     // Vérifier la duplication du modèle
     const existingTemplate = await this.prisma.template.findFirst({

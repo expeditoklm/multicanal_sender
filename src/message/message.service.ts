@@ -156,7 +156,7 @@ export class MessageService {
   }
   // Main function to send a message to all contacts
   async sendMessage(messageId: number): Promise<string> {
-
+console.log("jenvoie dejai un message")
     if (isNaN(messageId)) {
       console.error(`ID du message non valide: ${messageId}`);
       throw new BadRequestException("L'ID du message est invalide. Veuillez fournir un ID numérique valide.");
@@ -218,7 +218,6 @@ export class MessageService {
         });
 
 
-       
 
         try {
           if(channel.label === "Email") {
@@ -382,10 +381,10 @@ export class MessageService {
 
 
 // Cron job pour vérifier et envoyer les messages programmés
-@Cron("*/5 * * * * *") // Vérification toutes les 5 secondes
+ //@Cron("*/5 * * * * *") // Vérification toutes les 5 secondes
+@Cron('0 0 */2 * * *') // Exécution toutes les 2 heures
 async sendScheduledMessages() {
-
-    const currentDate = new Date();
+  const currentDate = new Date();
 
     // Récupérer les messages programmés pour envoi
     const messages = await this.prisma.message.findMany({
